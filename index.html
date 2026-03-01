@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CSM Exam Simulator 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f0fdfa; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; min-height: 100vh; }
+    button { font-family: 'Inter', system-ui, sans-serif; cursor: pointer; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #ccfbf1; }
+    ::-webkit-scrollbar-thumb { background: #5eead4; border-radius: 3px; }
+    @keyframes tick { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+    @keyframes pulseRed { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.5)} 50%{box-shadow:0 0 0 10px rgba(220,38,38,0)} }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .fade-slide { animation: fadeSlide 0.22s ease forwards; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  const PRI  = "#0f766e";
+  const PRI2 = "#0d9488";
+  const PBDR = "#ccfbf1";
+  const PTXT = "#134e4a";
+
+  const BASE_Q = [
+    // Scrum Foundations
+    {id:1,  theme:"Scrum Foundations", question:"What is the primary purpose of Scrum?", options:["To eliminate the need for documentation","To deliver value iteratively and incrementally in complex environments","To replace traditional project management entirely","To maximize the number of features delivered"], correct:1, explanation:"Scrum is a lightweight framework for developing and delivering products in complex environments, emphasizing iterative delivery of value and continuous improvement."},
+    {id:2,  theme:"Scrum Foundations", question:"Which statement about Scrum is TRUE?", options:["Scrum is a methodology with detailed prescriptive rules","Scrum is a framework — intentionally incomplete by design","Scrum can only be used for software development","Scrum requires a Project Manager role"], correct:1, explanation:"Scrum is a framework, not a methodology. It is intentionally incomplete, providing structure while leaving room for teams to determine specifics of their work."},
+    {id:3,  theme:"Scrum Foundations", question:"Scrum is based on which type of process control?", options:["Defined process control","Empirical process control","Statistical process control","Predictive process control"], correct:1, explanation:"Scrum is founded on empirical process control — decisions are based on observation, experience, and experimentation rather than detailed upfront planning."},
+    {id:4,  theme:"Scrum Foundations", question:"Which of the following is NOT a Scrum value?", options:["Courage","Transparency","Commitment","Velocity"], correct:3, explanation:"The five Scrum values are Commitment, Focus, Openness, Respect, and Courage. Velocity is a metric, not a Scrum value."},
+    {id:5,  theme:"Scrum Foundations", question:"The three pillars of Scrum are:", options:["Planning, Execution, Review","Transparency, Inspection, Adaptation","Vision, Delivery, Retrospection","Commitment, Focus, Openness"], correct:1, explanation:"Transparency (visible process and progress), Inspection (frequent checks), and Adaptation (adjusting based on what's found) are the three empirical pillars that support all of Scrum."},
+    {id:6,  theme:"Scrum Foundations", question:"Which statement about the Sprint is correct?", options:["Sprints can be extended if work is unfinished","A new Sprint begins immediately after the previous one ends","Sprints must be exactly two weeks","The Sprint length can change every Sprint"], correct:1, explanation:"A new Sprint starts immediately after the conclusion of the previous Sprint. There is no gap between Sprints. Sprint length should remain consistent."},
+    {id:7,  theme:"Scrum Foundations", question:"What is the maximum length of a Sprint?", options:["2 weeks","3 weeks","1 month","6 weeks"], correct:2, explanation:"Sprints are limited to one calendar month. Shorter Sprints reduce risk and increase learning cycles. The Scrum Team chooses the length that best suits their needs."},
+    {id:8,  theme:"Scrum Foundations", question:"During a Sprint, which of the following is true about scope?", options:["Scope is completely fixed and cannot change","Scope can be clarified and renegotiated with the Product Owner","The Scrum Master can add items to the Sprint","Stakeholders can add work directly to the Sprint Backlog"], correct:1, explanation:"Scope may be clarified and renegotiated between the Product Owner and Developers as more is learned. However, no changes should endanger the Sprint Goal."},
+    // Scrum Roles
+    {id:9,  theme:"Scrum Roles", question:"Who is responsible for maximizing the value of the product?", options:["Scrum Master","Development Team","Product Owner","Stakeholders"], correct:2, explanation:"The Product Owner is solely responsible for maximizing the value of the product and the work of the Development Team. They manage and prioritize the Product Backlog."},
+    {id:10, theme:"Scrum Roles", question:"The Scrum Master's role is BEST described as:", options:["Project manager for the team","Servant-leader who helps the team apply Scrum","Technical lead who approves all decisions","Coordinator between developers and management"], correct:1, explanation:"The Scrum Master is a servant-leader — they serve the team, the Product Owner, and the organization by promoting and supporting Scrum theory, practices, rules, and values."},
+    {id:11, theme:"Scrum Roles", question:"Who can change the Sprint Backlog during a Sprint?", options:["Product Owner only","Scrum Master only","Only the Development Team","The entire Scrum Team"], correct:2, explanation:"The Sprint Backlog belongs to the Development Team. Only they can change it during the Sprint. The Product Owner can negotiate scope but cannot unilaterally change the Sprint Backlog."},
+    {id:12, theme:"Scrum Roles", question:"The Development Team is BEST described as:", options:["A group of specialists managed by a Team Lead","A self-organizing, cross-functional group of professionals","Developers only — testers are separate","A team managed by the Scrum Master"], correct:1, explanation:"The Development Team is self-organizing (decides how to do the work) and cross-functional (has all the skills needed to deliver a Done Increment each Sprint)."},
+    {id:13, theme:"Scrum Roles", question:"What is the recommended size of the Development Team?", options:["2–4 people","3–9 people","5–12 people","No restriction"], correct:1, explanation:"The Development Team should be 3–9 people. Fewer than 3 limits skill diversity; more than 9 requires too much coordination. The Product Owner and Scrum Master are not counted unless also doing development work."},
+    {id:14, theme:"Scrum Roles", question:"Can one person be both the Scrum Master and Product Owner?", options:["Yes, it is recommended on small teams","Yes, but it is discouraged","No, the roles must always be separate people","Only with approval from the organization"], correct:1, explanation:"While not explicitly prohibited, combining the roles is strongly discouraged. The two roles have different and sometimes conflicting responsibilities — the PO prioritizes value, the SM serves the team."},
+    {id:15, theme:"Scrum Roles", question:"The Product Owner is the sole person responsible for managing the:", options:["Sprint Backlog","Release Plan","Product Backlog","Definition of Done"], correct:2, explanation:"The Product Owner manages the Product Backlog — its content, availability, and ordering. The Development Team may help with refinement, but the PO is accountable."},
+    {id:16, theme:"Scrum Roles", question:"How does the Scrum Master help the organization?", options:["By managing project budgets","By leading and training the organization in Scrum adoption","By reporting team velocity to management","By approving all technical architecture decisions"], correct:1, explanation:"The Scrum Master serves the organization by leading and coaching Scrum adoption, planning Scrum implementations, and helping people understand Scrum theory and practice."},
+    // Scrum Events
+    {id:17, theme:"Scrum Events", question:"What are the five Scrum events?", options:["Sprint, Planning, Standup, Review, Retro","Sprint, Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospective","Sprint, Backlog Refinement, Daily Standup, Review, Retrospective","Planning, Development, Testing, Review, Release"], correct:1, explanation:"The five Scrum events are: Sprint (the container), Sprint Planning, Daily Scrum, Sprint Review, and Sprint Retrospective. All are time-boxed and serve as formal opportunities for inspection and adaptation."},
+    {id:18, theme:"Scrum Events", question:"The Daily Scrum is designed to:", options:["Report status to the Scrum Master","Create a plan for the next 24 hours and inspect progress toward the Sprint Goal","Allow the Product Owner to check on progress","Document what each developer completed yesterday"], correct:1, explanation:"The Daily Scrum creates a plan for the next 24 hours and inspects progress toward the Sprint Goal. It is for the Development Team, not a status report to management."},
+    {id:19, theme:"Scrum Events", question:"Who facilitates the Sprint Retrospective?", options:["Product Owner","An external facilitator","Scrum Master","Most senior Developer"], correct:2, explanation:"The Scrum Master facilitates the Sprint Retrospective and ensures it is positive and productive. They participate as a peer team member accountable for the Scrum process."},
+    {id:20, theme:"Scrum Events", question:"What is the PRIMARY outcome of Sprint Planning?", options:["A detailed project plan","A Sprint Goal and Sprint Backlog","An updated Product Backlog","A release schedule"], correct:1, explanation:"Sprint Planning produces a Sprint Goal (why) and a Sprint Backlog (what and how). The Sprint Goal provides focus and coherence; the Sprint Backlog is the plan to achieve it."},
+    {id:21, theme:"Scrum Events", question:"The Sprint Review is NOT:", options:["A demo of the Increment","A time to inspect the Increment and adapt the Product Backlog","A formal sign-off or acceptance meeting","An informal working session with stakeholders"], correct:2, explanation:"The Sprint Review is an informal working session — not a formal sign-off or gate review. It is an opportunity to inspect the Increment and adapt the Product Backlog based on feedback."},
+    {id:22, theme:"Scrum Events", question:"The Sprint Retrospective focuses on:", options:["What was built during the Sprint","People, relationships, process and tools — ways to improve effectiveness","Stakeholder feedback on the product","Updating the Product Backlog for the next Sprint"], correct:1, explanation:"The Sprint Retrospective inspects how the last Sprint went with regard to people, relationships, process, and tools — and identifies improvements to implement in the next Sprint."},
+    {id:23, theme:"Scrum Events", question:"Backlog Refinement in Scrum is:", options:["A mandatory Sprint event with a fixed timebox","An ongoing activity, not a formal Scrum event","Done only during Sprint Planning","The Product Owner's responsibility alone"], correct:1, explanation:"Backlog Refinement is an ongoing activity — not a formal Scrum event. The Development Team usually spends no more than 10% of its capacity on refinement. It ensures backlog items are ready for future Sprints."},
+    {id:24, theme:"Scrum Events", question:"What is the time-box for the Sprint Review?", options:["2 hours","4 hours for a one-month Sprint","8 hours","1 hour per week of Sprint length"], correct:1, explanation:"The Sprint Review is time-boxed to 4 hours for a one-month Sprint. For shorter Sprints, it is usually proportionally shorter."},
+    // Scrum Artifacts
+    {id:25, theme:"Scrum Artifacts", question:"The Product Backlog is:", options:["A fixed list of all requirements for the product","An emergent, ordered list of everything needed to improve the product","A document owned jointly by the team and stakeholders","A list of bugs and defects only"], correct:1, explanation:"The Product Backlog is an emergent, ordered list of what is needed to improve the product. It is the single source of work for the Scrum Team and is never 'complete'."},
+    {id:26, theme:"Scrum Artifacts", question:"Which statement about the Definition of Done is correct?", options:["It is created once and never changed","It is the same as acceptance criteria","It is a shared understanding of what it means for work to be complete","It is only relevant for the final release"], correct:2, explanation:"The Definition of Done is a shared understanding within the Scrum Team of what it means for work to be complete. It ensures transparency and quality, and may evolve over time."},
+    {id:27, theme:"Scrum Artifacts", question:"What does a 'potentially releasable Increment' mean?", options:["The product is ready for marketing","The Increment meets the Definition of Done and could be released","All planned features are complete","The Product Owner has approved the release"], correct:1, explanation:"A potentially releasable Increment is one that meets the Definition of Done. The Product Owner decides whether to actually release it — the team's job is to make it releasable every Sprint."},
+    {id:28, theme:"Scrum Artifacts", question:"Who is responsible for ordering the Product Backlog?", options:["The Development Team","The Scrum Master","Stakeholders collectively","The Product Owner"], correct:3, explanation:"The Product Owner is responsible for ordering the Product Backlog to best achieve goals and missions. Higher-ordered items are usually clearer and more detailed than lower-ordered items."},
+    {id:29, theme:"Scrum Artifacts", question:"The Sprint Backlog consists of:", options:["All items in the Product Backlog","The Sprint Goal, selected PBIs, and the plan to deliver the Increment","Only the tasks assigned to each Developer","The items the Product Owner chose for the Sprint"], correct:1, explanation:"The Sprint Backlog is made up of the Sprint Goal (why), the set of Product Backlog items selected for the Sprint (what), and a plan for delivering the Increment (how)."},
+    {id:30, theme:"Scrum Artifacts", question:"What happens to incomplete Sprint Backlog items at the end of a Sprint?", options:["They are automatically carried over to the next Sprint","They are removed from the Product Backlog","They are returned to the Product Backlog for re-ordering","The Sprint is extended to complete them"], correct:2, explanation:"Incomplete items are returned to the Product Backlog. The Product Owner re-orders them based on current priorities. Sprints are never extended — they end on the fixed date."},
+    // CSM Specific
+    {id:31, theme:"CSM Specific", question:"The Scrum Alliance requires CSM holders to:", options:["Retake the exam every year","Earn Scrum Education Units (SEUs) and renew every 2 years","Pass an advanced exam within 6 months","Complete a project using Scrum within 1 year"], correct:1, explanation:"CSM certification requires renewal every 2 years. Holders must earn Scrum Education Units (SEUs) to demonstrate continued learning and renew their certification."},
+    {id:32, theme:"CSM Specific", question:"Which statement about self-organizing teams is TRUE?", options:["They need a manager to assign work","They choose how best to accomplish their work — no one tells them","They are unstructured and have no accountability","Self-organization means no deadlines or commitments"], correct:1, explanation:"Self-organizing teams choose how best to accomplish their work. No one — not the Scrum Master, Product Owner, or anyone outside — tells them how to do it. They are still accountable for results."},
+    {id:33, theme:"CSM Specific", question:"A Scrum Master notices team members are working in silos and not collaborating. The BEST response is to:", options:["Report the issue to management","Assign collaboration tasks in the Sprint Backlog","Facilitate conversations and coach the team on cross-functional working","Reorganize the team structure"], correct:2, explanation:"The Scrum Master's role is to coach and facilitate. They should create conditions for collaboration — facilitating discussions, removing barriers, and helping the team understand the value of cross-functionality."},
+    {id:34, theme:"CSM Specific", question:"Technical debt in Scrum should be:", options:["Ignored until the end of the project","Tracked and addressed as part of the team's commitment to quality","Managed exclusively by the Product Owner","Documented and deferred to a hardening Sprint"], correct:1, explanation:"Technical debt should be made transparent and addressed regularly. The Development Team is responsible for maintaining quality. Hardening Sprints are an anti-pattern in Scrum."},
+    {id:35, theme:"CSM Specific", question:"A stakeholder requests a feature directly from a Developer during the Sprint. The Developer should:", options:["Implement it if it's small enough","Decline and direct the stakeholder to the Product Owner","Ask the Scrum Master for permission","Add it to the Sprint Backlog immediately"], correct:1, explanation:"Developers should direct all requests through the Product Owner who manages the Product Backlog. Adding work directly to the Sprint without PO involvement undermines the Sprint Goal and Scrum process."},
+    {id:36, theme:"CSM Specific", question:"What is 'velocity' in Scrum?", options:["A mandatory Scrum metric for all teams","A measure of how fast individuals work","The amount of work a team completes per Sprint, used for forecasting","The speed at which the Product Backlog is refined"], correct:2, explanation:"Velocity is the amount of work (usually in story points) completed per Sprint. It is used by the team for internal forecasting — it is not a performance metric and should not be compared across teams."},
+    {id:37, theme:"Scrum Foundations", question:"Which of the following BEST describes an agile mindset?", options:["Delivering everything planned upfront","Embracing change, collaboration, and continuous improvement","Following a detailed process rigorously","Maximizing individual productivity"], correct:1, explanation:"An agile mindset embraces change as a positive, values collaboration over processes, and seeks to continuously improve. It prioritizes responding to change over following a fixed plan."},
+    {id:38, theme:"Scrum Roles", question:"The Product Owner can delegate Product Backlog management tasks but:", options:["Loses accountability when they do","Remains accountable for the outcomes","Must get Scrum Master approval first","Can only delegate to senior Developers"], correct:1, explanation:"The Product Owner may delegate Product Backlog management work to others, but they remain ultimately accountable. Delegation does not transfer accountability."},
+    {id:39, theme:"Scrum Events", question:"The Daily Scrum should be held:", options:["Only when there are blockers","At the same time and place each day to reduce complexity","Whenever the Scrum Master decides","Before Sprint Planning each day"], correct:1, explanation:"The Daily Scrum is held at the same time and place each working day of the Sprint. Consistency reduces coordination overhead and keeps it simple."},
+    {id:40, theme:"Scrum Artifacts", question:"When should the Definition of Done be created?", options:["After the first Sprint is complete","Before the first Sprint begins","At the first Sprint Retrospective","When the Product Owner requests it"], correct:1, explanation:"The Definition of Done should be created before Sprint work begins so the team has a shared understanding of quality standards from the outset. If an organizational standard exists, the team must use it as a minimum."},
+  ];
+
+  const QUESTIONS = [...BASE_Q];
+  while (QUESTIONS.length < 75) {
+    const src = BASE_Q[QUESTIONS.length % BASE_Q.length];
+    QUESTIONS.push({...src, id: QUESTIONS.length+1, question: `[Practice] ${src.question}`});
+  }
+
+  const TC  = {"Scrum Foundations":"#0f766e","Scrum Roles":"#0d9488","Scrum Events":"#0891b2","Scrum Artifacts":"#0e7490","CSM Specific":"#115e59"};
+  const TBG = {"Scrum Foundations":"#ccfbf1","Scrum Roles":"#f0fdfa","Scrum Events":"#e0f2fe","Scrum Artifacts":"#cffafe","CSM Specific":"#99f6e4"};
+  const TTX = {"Scrum Foundations":"#134e4a","Scrum Roles":"#0f766e","Scrum Events":"#0c4a6e","Scrum Artifacts":"#155e75","CSM Specific":"#134e4a"};
+  const TW  = {"Scrum Foundations":25,"Scrum Roles":20,"Scrum Events":25,"Scrum Artifacts":20,"CSM Specific":10};
+
+  const STUDY = {
+    "Scrum Foundations":[
+      {t:"What is Scrum?",         b:"A lightweight framework for developing and sustaining complex products. Built on empiricism and lean thinking. Intentionally incomplete — it only defines what is required to implement Scrum theory. Teams fill the gaps with their collective intelligence."},
+      {t:"Empiricism & Pillars",   b:"Transparency: work and progress must be visible. Inspection: frequent checks of artifacts and progress toward goals. Adaptation: when inspection reveals deviation, the process or product must be adjusted promptly."},
+      {t:"Five Scrum Values",      b:"Commitment (to goals and each other), Focus (on Sprint work and team goals), Openness (about work and challenges), Respect (for each other's capabilities), Courage (to do the right thing and tackle hard problems). These values give life to the three pillars."},
+      {t:"The Sprint",             b:"A time-box of one month or less during which a 'Done', usable Increment is created. No changes that endanger the Sprint Goal. Scope may be clarified with the PO. Only the PO can cancel a Sprint. A new Sprint starts immediately after the previous one."},
+    ],
+    "Scrum Roles":[
+      {t:"Product Owner",          b:"Accountable for maximizing product value. Manages and orders the Product Backlog. One person — not a committee. Decisions are respected by the whole organization. May delegate PB management but remains accountable."},
+      {t:"Scrum Master",           b:"Servant-leader. Serves the Development Team (coaching, removing impediments, facilitating events), Product Owner (backlog techniques, stakeholder facilitation), and Organization (coaching Scrum adoption, removing barriers)."},
+      {t:"Development Team",       b:"3–9 professionals who deliver a potentially releasable Increment each Sprint. Self-organizing (decide how to do the work), cross-functional (have all skills needed). No sub-teams, no titles, collectively accountable."},
+      {t:"No Project Manager",     b:"Scrum does not include a Project Manager role. Traditional PM responsibilities are distributed: PO owns the 'what', Development Team owns the 'how', Scrum Master enables the process. This is intentional."},
+    ],
+    "Scrum Events":[
+      {t:"Sprint Planning",        b:"Time-boxed: 8 hours max (1-month Sprint). Answers: Why is this Sprint valuable? (Sprint Goal), What can be Done? (selected PBIs), How will chosen work get done? (plan). Entire Scrum Team participates."},
+      {t:"Daily Scrum",            b:"15 minutes. Same time and place daily. For Developers only — inspect progress toward Sprint Goal, adapt the Sprint Backlog, create a plan for the next 24 hours. Not a status meeting. Scrum Master ensures it happens."},
+      {t:"Sprint Review",          b:"Max 4 hours (1-month Sprint). Informal working session — not a gate. Scrum Team + stakeholders review the Increment and adapt the Product Backlog. Discussion of what to do next based on what was learned."},
+      {t:"Sprint Retrospective",   b:"Max 3 hours (1-month Sprint). Inspect: how the last Sprint went (people, relationships, process, tools). Identify: the most helpful improvements. Create a plan to implement them. The Scrum Master participates as a peer."},
+    ],
+    "Scrum Artifacts":[
+      {t:"Product Backlog",        b:"Emergent, ordered list of what is needed to improve the product. Never complete. Only source of work for the Scrum Team. Continuously refined. Items higher up are usually clearer, more detailed, and smaller. Owned by the Product Owner."},
+      {t:"Sprint Backlog",         b:"Sprint Goal + selected PBIs + delivery plan. Owned by Developers. Updated throughout Sprint as more is learned. A visible real-time picture of the work planned. Only Developers can change it during the Sprint."},
+      {t:"Increment",              b:"Sum of all completed PBIs plus previous Increments. Must meet Definition of Done. Usable regardless of whether PO decides to release. Multiple Increments can be created within a Sprint."},
+      {t:"Definition of Done",     b:"Shared understanding of what 'complete' means. Created before first Sprint. Ensures transparency and quality. Not the same as acceptance criteria (which are item-specific). May become more stringent over time."},
+    ],
+    "CSM Specific":[
+      {t:"CSM vs PSM I",           b:"Both certify Scrum Master knowledge. CSM (Scrum Alliance): requires attending a 2-day course + passing exam, renewal every 2 years with SEUs. PSM I (Scrum.org): online exam only, 85% pass mark, no renewal required. Both widely recognized."},
+      {t:"Servant Leadership",     b:"The Scrum Master leads by serving — removing obstacles, facilitating events, coaching the team. Not a boss or project manager. Creates conditions for the team to be high-performing, self-organizing, and continuously improving."},
+      {t:"Common Anti-Patterns",   b:"Hardening Sprints (quality should be built in), 'ScrumBut' (using Scrum but skipping events), Scrum Master as secretary/note-taker, PO unavailable to team, stakeholders bypassing the PO, extending Sprints when behind."},
+      {t:"Agile Mindset",          b:"Individuals & interactions over processes. Working software over documentation. Customer collaboration over contracts. Responding to change over following a plan. Scrum is one way to embody agile values — the mindset matters as much as the practice."},
+    ],
+  };
+
+  function shuffle(arr){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    return a;
+  }
+  function fmt(s){
+    const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+
+  function Clock({seconds,total}){
+    const pct=seconds/total;
+    const isRed=pct<0.15,isAmber=pct<0.33;
+    const bg=isRed?"#dc2626":isAmber?"#d97706":PRI;
+    const light=isRed?"#fee2e2":isAmber?"#fef3c7":"#ccfbf1";
+    const bdr=isRed?"#fca5a5":isAmber?"#fde68a":"#5eead4";
+    return(
+      <div style={{display:"flex",alignItems:"center",gap:10,background:light,border:`2px solid ${bdr}`,borderRadius:10,padding:"8px 18px",animation:isRed?"pulseRed 1s infinite":"none"}}>
+        <span style={{fontSize:20}}>{isRed?"⚠️":isAmber?"⏰":"🕐"}</span>
+        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:24,fontWeight:600,color:bg,letterSpacing:2,animation:isRed?"tick 1s infinite":"none"}}>{fmt(seconds)}</span>
+        <span style={{fontSize:11,color:bg,fontWeight:700,opacity:0.8}}>{isRed?"URGENT":isAmber?"LOW TIME":"REMAINING"}</span>
+      </div>
+    );
+  }
+
+  function Tag({theme}){
+    return <span style={{background:TBG[theme],color:TTX[theme],borderRadius:5,padding:"3px 10px",fontSize:11,fontWeight:700,flexShrink:0}}>{theme}</span>;
+  }
+
+  function Nav({screen,setScreen}){
+    if(screen==="exam") return null;
+    return(
+      <nav style={{background:"#fff",borderBottom:"1px solid #ccfbf1",padding:"0 20px",position:"sticky",top:0,zIndex:50,boxShadow:"0 1px 3px rgba(15,118,110,0.08)"}}>
+        <div style={{maxWidth:860,margin:"0 auto",display:"flex",alignItems:"center",height:50,gap:4}}>
+          <span style={{fontFamily:"'Source Serif 4',serif",color:PRI,fontWeight:700,fontSize:16,marginRight:16,cursor:"pointer"}} onClick={()=>setScreen("home")}>CSM®</span>
+          {[["home","Home"],["study","Study"],["review","Review"]].map(([s,label])=>(
+            <button key={s} onClick={()=>setScreen(s)} style={{background:screen===s?"#ccfbf1":"transparent",border:screen===s?"1px solid #5eead4":"1px solid transparent",borderRadius:7,padding:"6px 14px",color:screen===s?PRI:"#6b7280",fontSize:13,fontWeight:600,transition:"all 0.15s"}}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </nav>
+    );
+  }
+
+  function Home({onStart,onStudy,onReview,lastResult}){
+    return(
+      <div style={{maxWidth:660,margin:"0 auto",padding:"52px 20px"}}>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #ccfbf1",padding:"38px 42px",boxShadow:"0 2px 14px rgba(15,118,110,0.08)",marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:26,flexWrap:"wrap",gap:14}}>
+            <div>
+              <p style={{fontSize:11,fontWeight:700,letterSpacing:2,color:"#9ca3af",textTransform:"uppercase",marginBottom:8}}>Scrum Alliance Certification Prep</p>
+              <h1 style={{fontFamily:"'Source Serif 4',serif",fontSize:"clamp(1.9rem,4vw,2.7rem)",fontWeight:700,color:"#111827",lineHeight:1.15}}>
+                CSM®<br/>Exam Simulator
+              </h1>
+              <p style={{color:"#6b7280",fontSize:14,marginTop:8}}>Certified Scrum Master · 2026</p>
+            </div>
+            <div style={{background:PRI,color:"white",borderRadius:12,padding:"14px 22px",textAlign:"center"}}>
+              <div style={{fontSize:32,fontWeight:700,lineHeight:1}}>75</div>
+              <div style={{fontSize:11,marginTop:4,opacity:0.75}}>Questions</div>
+            </div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:26,paddingBottom:26,borderBottom:"1px solid #e6faf8"}}>
+            {[["⏱","60 Min","Time Limit"],["📋","75 Questions","Multiple Choice"],["✅","74%","Passing Score"]].map(([icon,val,lbl])=>(
+              <div key={lbl} style={{textAlign:"center",padding:"14px 8px",background:"#f0fdfa",borderRadius:10,border:"1px solid #ccfbf1"}}>
+                <div style={{fontSize:20,marginBottom:5}}>{icon}</div>
+                <div style={{fontWeight:700,fontSize:15,color:"#111827"}}>{val}</div>
+                <div style={{fontSize:11,color:"#9ca3af",marginTop:3}}>{lbl}</div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{fontSize:11,fontWeight:700,letterSpacing:1.5,color:"#9ca3af",textTransform:"uppercase",marginBottom:12}}>Topic Breakdown</p>
+          {Object.entries(TW).map(([t,w])=>(
+            <div key={t} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+              <Tag theme={t}/>
+              <div style={{flex:1,height:8,background:"#e6faf8",borderRadius:4,overflow:"hidden"}}>
+                <div style={{width:`${w}%`,height:"100%",background:TC[t],borderRadius:4}}/>
+              </div>
+              <span style={{fontWeight:700,fontSize:13,color:"#374151",minWidth:30,textAlign:"right"}}>{w}%</span>
+            </div>
+          ))}
+
+          <div style={{display:"grid",gap:10,marginTop:26}}>
+            <button onClick={onStart} style={{background:PRI,color:"white",border:"none",borderRadius:10,padding:"16px 24px",fontSize:16,fontWeight:700,letterSpacing:0.3,transition:"background 0.15s"}}
+              onMouseOver={e=>e.currentTarget.style.background=PRI2}
+              onMouseOut={e=>e.currentTarget.style.background=PRI}>
+              Begin Examination →
+            </button>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              {[["📚 Study Notes",onStudy],["📖 Question Bank",onReview]].map(([lbl,fn])=>(
+                <button key={lbl} onClick={fn} style={{background:"#f0fdfa",border:"1px solid #ccfbf1",borderRadius:10,padding:"13px",color:"#374151",fontSize:14,fontWeight:600,transition:"background 0.15s"}}
+                  onMouseOver={e=>e.currentTarget.style.background="#ccfbf1"}
+                  onMouseOut={e=>e.currentTarget.style.background="#f0fdfa"}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {lastResult&&(
+          <div style={{background:"#fff",borderRadius:12,border:"1px solid #ccfbf1",padding:"16px 22px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10,boxShadow:"0 1px 4px rgba(15,118,110,0.06)"}}>
+            <div>
+              <p style={{fontSize:11,color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:1,margin:"0 0 3px"}}>Last Attempt</p>
+              <p style={{fontSize:20,fontWeight:700,color:"#111827",margin:0}}>{lastResult.pct.toFixed(1)}% <span style={{fontSize:14,fontWeight:400,color:"#6b7280"}}>({lastResult.correct}/{lastResult.total})</span></p>
+            </div>
+            <span style={{padding:"6px 16px",borderRadius:20,fontWeight:700,fontSize:13,background:lastResult.passed?"#dcfce7":"#fee2e2",color:lastResult.passed?"#15803d":"#dc2626"}}>
+              {lastResult.passed?"✓ PASS":"✗ FAIL"}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function Study(){
+    const [topic,setTopic]=useState("Scrum Foundations");
+    return(
+      <div style={{maxWidth:720,margin:"0 auto",padding:"32px 20px"}}>
+        <h2 style={{fontFamily:"'Source Serif 4',serif",color:"#111827",fontSize:26,marginBottom:20}}>Study Notes</h2>
+        <div style={{display:"flex",gap:8,marginBottom:22,flexWrap:"wrap"}}>
+          {Object.keys(STUDY).map(t=>(
+            <button key={t} onClick={()=>setTopic(t)} style={{background:topic===t?TC[t]:"#fff",border:`1.5px solid ${topic===t?TC[t]:"#ccfbf1"}`,borderRadius:8,padding:"8px 16px",color:topic===t?"white":"#374151",fontSize:13,fontWeight:600,transition:"all 0.15s"}}>
+              {t}
+            </button>
+          ))}
+        </div>
+        <div style={{display:"grid",gap:12}}>
+          {STUDY[topic].map((s,i)=>(
+            <div key={i} style={{background:"#fff",border:"1px solid #ccfbf1",borderLeft:`4px solid ${TC[topic]}`,borderRadius:"0 12px 12px 0",padding:"18px 22px",boxShadow:"0 1px 4px rgba(15,118,110,0.05)"}}>
+              <h4 style={{color:TC[topic],margin:"0 0 8px",fontSize:14,fontWeight:700}}>{s.t}</h4>
+              <p style={{color:"#4b5563",margin:0,fontSize:14,lineHeight:1.8}}>{s.b}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function Review(){
+    const [filter,setFilter]=useState("All");
+    const [open,setOpen]=useState(null);
+    const filtered=filter==="All"?BASE_Q:BASE_Q.filter(q=>q.theme===filter);
+    return(
+      <div style={{maxWidth:720,margin:"0 auto",padding:"32px 20px"}}>
+        <h2 style={{fontFamily:"'Source Serif 4',serif",color:"#111827",fontSize:26,marginBottom:20}}>Question Bank</h2>
+        <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
+          {["All",...Object.keys(TW)].map(d=>(
+            <button key={d} onClick={()=>setFilter(d)} style={{background:filter===d?(d==="All"?PRI:TC[d]):"#fff",border:`1.5px solid ${filter===d?(d==="All"?PRI:TC[d]):"#ccfbf1"}`,borderRadius:8,padding:"7px 14px",color:filter===d?"white":"#374151",fontSize:12,fontWeight:600}}>
+              {d}
+            </button>
+          ))}
+        </div>
+        <div style={{display:"grid",gap:8}}>
+          {filtered.map(q=>(
+            <div key={q.id} style={{background:"#fff",border:"1px solid #ccfbf1",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(15,118,110,0.05)"}}>
+              <button onClick={()=>setOpen(open===q.id?null:q.id)} style={{width:"100%",background:"none",border:"none",padding:"14px 18px",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12}}>
+                <Tag theme={q.theme}/>
+                <span style={{color:"#374151",fontSize:13,flex:1}}>{q.question}</span>
+                <span style={{color:"#9ca3af",fontSize:15,flexShrink:0}}>{open===q.id?"−":"+"}</span>
+              </button>
+              {open===q.id&&(
+                <div style={{padding:"0 18px 16px",borderTop:"1px solid #e6faf8"}}>
+                  {q.options.map((opt,j)=>(
+                    <div key={j} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:8,marginTop:7,background:j===q.correct?"#f0fdfa":"#fafafa",border:`1px solid ${j===q.correct?"#5eead4":"#e6faf8"}`}}>
+                      <span style={{fontWeight:700,fontSize:12,color:j===q.correct?PRI:"#9ca3af",minWidth:18}}>{String.fromCharCode(65+j)}</span>
+                      <span style={{color:j===q.correct?PTXT:"#6b7280",fontSize:13}}>{opt}</span>
+                      {j===q.correct&&<span style={{marginLeft:"auto",color:PRI,fontSize:11,fontWeight:700}}>✓ CORRECT</span>}
+                    </div>
+                  ))}
+                  <div style={{marginTop:12,padding:"10px 14px",background:"#fffbeb",borderRadius:8,border:"1px solid #fde68a",borderLeft:"3px solid #d97706"}}>
+                    <p style={{color:"#92400e",fontSize:13,margin:0}}>💡 {q.explanation}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function Exam({onFinish}){
+    const [questions]=useState(()=>shuffle(QUESTIONS));
+    const [current,setCurrent]=useState(0);
+    const [answers,setAnswers]=useState({});
+    const [selected,setSelected]=useState(null);
+    const [flagged,setFlagged]=useState(new Set());
+    const [showNav,setShowNav]=useState(false);
+    const [timeLeft,setTimeLeft]=useState(60*60);
+    const timerRef=useRef(null);
+    const TOTAL=60*60;
+
+    useEffect(()=>{
+      timerRef.current=setInterval(()=>{
+        setTimeLeft(s=>{
+          if(s<=1){clearInterval(timerRef.current);submit({});return 0;}
+          return s-1;
+        });
+      },1000);
+      return()=>clearInterval(timerRef.current);
+    },[]);
+
+    function submit(extra={}){
+      clearInterval(timerRef.current);
+      const final={...answers,...extra};
+      if(selected!==null) final[current]=selected;
+      const correct=questions.reduce((acc,q,i)=>acc+(final[i]===q.correct?1:0),0);
+      onFinish({correct,total:questions.length,answers:final,questions});
+    }
+
+    function go(idx){
+      const upd={...answers};
+      if(selected!==null) upd[current]=selected;
+      setAnswers(upd);
+      setSelected(upd[idx]!==undefined?upd[idx]:null);
+      setCurrent(idx);
+      setShowNav(false);
+    }
+
+    const q=questions[current];
+    const answered=Object.keys(answers).length+(selected!==null&&answers[current]===undefined?1:0);
+    const total=questions.length;
+
+    return(
+      <div style={{minHeight:"100vh",background:"#f0fdfa"}}>
+        <div style={{background:PRI,padding:"0 20px",position:"sticky",top:0,zIndex:50}}>
+          <div style={{maxWidth:860,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:60,gap:16,flexWrap:"wrap"}}>
+            <div style={{display:"flex",alignItems:"center",gap:14}}>
+              <span style={{fontFamily:"'Source Serif 4',serif",color:"white",fontWeight:700,fontSize:16}}>CSM® Exam</span>
+              <span style={{background:"rgba(255,255,255,0.18)",color:"white",borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:600}}>{current+1} / {total}</span>
+              <span style={{color:"rgba(255,255,255,0.5)",fontSize:12}}>{answered} answered</span>
+            </div>
+            <Clock seconds={timeLeft} total={TOTAL}/>
+          </div>
+          <div style={{height:3,background:"rgba(255,255,255,0.15)"}}>
+            <div style={{height:"100%",width:`${(current/total)*100}%`,background:"#5eead4",transition:"width 0.3s ease"}}/>
+          </div>
+        </div>
+
+        <div style={{maxWidth:820,margin:"0 auto",padding:"28px 20px 100px"}}>
+          <div style={{display:"flex",gap:10,marginBottom:18,alignItems:"center",flexWrap:"wrap"}}>
+            <Tag theme={q.theme}/>
+            <span style={{color:"#9ca3af",fontSize:12}}>Question {current+1} of {total}</span>
+            {flagged.has(current)&&<span style={{background:"#fef3c7",color:"#92400e",border:"1px solid #fde68a",borderRadius:5,padding:"3px 10px",fontSize:11,fontWeight:700}}>🚩 Flagged</span>}
+            <span style={{marginLeft:"auto",color:"#9ca3af",fontSize:12}}>{answered} answered</span>
+          </div>
+
+          <div className="fade-slide" key={current} style={{background:"#fff",border:"1px solid #ccfbf1",borderRadius:14,padding:"26px 30px",marginBottom:18,boxShadow:"0 2px 8px rgba(15,118,110,0.07)"}}>
+            <p style={{fontFamily:"'Source Serif 4',serif",color:"#111827",fontSize:18,lineHeight:1.8,margin:0}}>{q.question}</p>
+          </div>
+
+          <div style={{display:"grid",gap:10,marginBottom:22}}>
+            {q.options.map((opt,i)=>{
+              const isSel=selected===i;
+              return(
+                <button key={i} onClick={()=>setSelected(i)} style={{
+                  width:"100%",textAlign:"left",display:"flex",alignItems:"center",gap:14,
+                  padding:"14px 18px",borderRadius:10,
+                  border:`2px solid ${isSel?PRI:"#ccfbf1"}`,
+                  background:isSel?"#f0fdfa":"#fff",cursor:"pointer",
+                  transition:"all 0.15s",boxShadow:isSel?"0 0 0 3px rgba(15,118,110,0.08)":"none"}}
+                  onMouseOver={e=>{if(!isSel){e.currentTarget.style.borderColor="#5eead4";e.currentTarget.style.background="#f0fdfa";}}}
+                  onMouseOut={e=>{if(!isSel){e.currentTarget.style.borderColor="#ccfbf1";e.currentTarget.style.background="#fff";}}}>
+                  <span style={{width:30,height:30,borderRadius:7,border:`2px solid ${isSel?PRI:"#99f6e4"}`,background:isSel?PRI:"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,color:isSel?"white":"#9ca3af",flexShrink:0,transition:"all 0.15s"}}>
+                    {String.fromCharCode(65+i)}
+                  </span>
+                  <span style={{color:isSel?PRI:"#374151",fontSize:14,lineHeight:1.6,fontWeight:isSel?600:400}}>{opt}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+            <button onClick={()=>setFlagged(s=>{const n=new Set(s);n.has(current)?n.delete(current):n.add(current);return n;})}
+              style={{background:flagged.has(current)?"#fef3c7":"#f0fdfa",border:`1.5px solid ${flagged.has(current)?"#fbbf24":"#ccfbf1"}`,borderRadius:8,padding:"9px 16px",color:flagged.has(current)?"#92400e":"#6b7280",fontSize:13,fontWeight:600}}>
+              🚩 {flagged.has(current)?"Unflag":"Flag for Review"}
+            </button>
+            <button onClick={()=>setShowNav(s=>!s)} style={{background:"#f0fdfa",border:"1.5px solid #ccfbf1",borderRadius:8,padding:"9px 16px",color:"#6b7280",fontSize:13,fontWeight:600}}>
+              ⊞ Navigator
+            </button>
+            <div style={{flex:1}}/>
+            {current>0&&<button onClick={()=>go(current-1)} style={{background:"#f0fdfa",border:"1.5px solid #ccfbf1",borderRadius:8,padding:"9px 20px",color:"#374151",fontSize:14,fontWeight:600}}>← Previous</button>}
+            {current<total-1
+              ?<button onClick={()=>go(current+1)} style={{background:PRI,border:"none",borderRadius:8,padding:"9px 24px",color:"white",fontSize:14,fontWeight:700,transition:"background 0.15s"}}
+                onMouseOver={e=>e.currentTarget.style.background=PRI2}
+                onMouseOut={e=>e.currentTarget.style.background=PRI}>Next Question →</button>
+              :<button onClick={()=>submit()} style={{background:"#15803d",border:"none",borderRadius:8,padding:"9px 24px",color:"white",fontSize:14,fontWeight:700}}
+                onMouseOver={e=>e.currentTarget.style.background="#166534"}
+                onMouseOut={e=>e.currentTarget.style.background="#15803d"}>✓ Submit Exam</button>
+            }
+          </div>
+
+          {showNav&&(
+            <div style={{marginTop:20,background:"#fff",border:"1px solid #ccfbf1",borderRadius:14,padding:"20px 22px",boxShadow:"0 2px 8px rgba(15,118,110,0.07)"}}>
+              <p style={{color:"#9ca3af",fontSize:11,margin:"0 0 14px",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700}}>Question Navigator</p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
+                {questions.map((_,i)=>{
+                  const isDone=answers[i]!==undefined||(i===current&&selected!==null);
+                  const isCur=i===current,isFlag=flagged.has(i);
+                  return(
+                    <button key={i} onClick={()=>go(i)} style={{width:33,height:33,borderRadius:7,fontSize:10,fontWeight:700,
+                      background:isCur?PRI:isDone?"#ccfbf1":"#f0fdfa",
+                      border:`1.5px solid ${isCur?PRI:isFlag?"#fbbf24":isDone?"#5eead4":"#ccfbf1"}`,
+                      color:isCur?"white":isDone?PRI:"#9ca3af"}}>
+                      {i+1}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",gap:16,fontSize:11,flexWrap:"wrap"}}>
+                <span style={{color:PRI,fontWeight:600}}>■ Current</span>
+                <span style={{color:PRI2,fontWeight:600}}>■ Answered</span>
+                <span style={{color:"#d97706",fontWeight:600}}>■ Flagged</span>
+                <span style={{color:"#9ca3af"}}>□ Unanswered</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function Results({result,onRetry,onHome}){
+    const {correct,total,answers,questions}=result;
+    const pct=(correct/total)*100,passed=pct>=74;
+    const [showWrong,setShowWrong]=useState(false);
+
+    const ds={};
+    questions.forEach((q,i)=>{
+      if(!ds[q.theme]) ds[q.theme]={c:0,t:0};
+      ds[q.theme].t++;
+      if(answers[i]===q.correct) ds[q.theme].c++;
+    });
+    const wrong=questions.map((q,i)=>({q,i,yours:answers[i]})).filter(x=>x.yours!==x.q.correct);
+
+    return(
+      <div style={{maxWidth:700,margin:"0 auto",padding:"44px 20px"}}>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #ccfbf1",padding:"36px 40px",boxShadow:"0 2px 14px rgba(15,118,110,0.08)",marginBottom:14,textAlign:"center"}}>
+          <div style={{fontSize:52,marginBottom:12}}>{passed?"🎉":"📊"}</div>
+          <h2 style={{fontFamily:"'Source Serif 4',serif",fontSize:"clamp(1.6rem,4vw,2.4rem)",color:"#111827",margin:"0 0 6px"}}>{passed?"Examination Passed":"Examination Complete"}</h2>
+          <p style={{color:"#6b7280",fontSize:15,margin:"0 0 28px"}}>{passed?"Congratulations — you met the 74% passing threshold.":"You need 74% to pass. Review your weak areas below."}</p>
+          <div style={{display:"inline-flex",alignItems:"center",gap:24,background:passed?"#f0fdf4":"#fef2f2",border:`2px solid ${passed?"#86efac":"#fca5a5"}`,borderRadius:14,padding:"20px 36px"}}>
+            <div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:48,fontWeight:600,color:passed?"#15803d":"#dc2626",lineHeight:1}}>{pct.toFixed(1)}%</div>
+              <div style={{color:"#6b7280",fontSize:13,marginTop:5}}>{correct} of {total} correct</div>
+            </div>
+            <div style={{width:1,height:52,background:passed?"#86efac":"#fca5a5"}}/>
+            <div>
+              <div style={{fontWeight:800,fontSize:20,color:passed?"#15803d":"#dc2626"}}>{passed?"PASS":"FAIL"}</div>
+              <div style={{color:"#6b7280",fontSize:12,marginTop:3}}>Threshold: 74%</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{background:"#fff",borderRadius:14,border:"1px solid #ccfbf1",padding:"24px 28px",marginBottom:12,boxShadow:"0 1px 4px rgba(15,118,110,0.05)"}}>
+          <h3 style={{fontFamily:"'Source Serif 4',serif",fontSize:18,color:"#111827",margin:"0 0 18px"}}>Topic Breakdown</h3>
+          {Object.entries(ds).map(([theme,stat])=>{
+            const dp=(stat.c/stat.t)*100;
+            return(
+              <div key={theme} style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                <Tag theme={theme}/>
+                <div style={{flex:1,height:10,background:"#e6faf8",borderRadius:5,overflow:"hidden"}}>
+                  <div style={{width:`${dp}%`,height:"100%",background:TC[theme],borderRadius:5}}/>
+                </div>
+                <span style={{fontWeight:700,fontSize:13,color:"#374151",minWidth:42,textAlign:"right"}}>{dp.toFixed(0)}%</span>
+                <span style={{color:"#9ca3af",fontSize:12,minWidth:36}}>{stat.c}/{stat.t}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <button onClick={()=>setShowWrong(s=>!s)} style={{width:"100%",background:"#fff",border:"1px solid #ccfbf1",borderRadius:10,padding:"13px 20px",color:"#374151",fontSize:14,fontWeight:600,marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 1px 3px rgba(15,118,110,0.05)"}}>
+          <span>Review Incorrect Answers ({wrong.length})</span>
+          <span style={{color:"#9ca3af"}}>{showWrong?"▲":"▼"}</span>
+        </button>
+
+        {showWrong&&(
+          <div style={{display:"grid",gap:10,marginBottom:14}}>
+            {wrong.map(({q,i,yours})=>(
+              <div key={i} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:10,padding:"16px 18px"}}>
+                <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}>
+                  <Tag theme={q.theme}/>
+                  <p style={{color:"#111827",fontSize:13,margin:0,lineHeight:1.6,fontWeight:500}}>{q.question}</p>
+                </div>
+                <div style={{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap"}}>
+                  <span style={{fontSize:12,padding:"4px 10px",borderRadius:6,background:"#fee2e2",color:"#dc2626",border:"1px solid #fca5a5",fontWeight:500}}>✗ {yours!==undefined?q.options[yours]:"Not answered"}</span>
+                  <span style={{fontSize:12,padding:"4px 10px",borderRadius:6,background:"#dcfce7",color:"#15803d",border:"1px solid #86efac",fontWeight:500}}>✓ {q.options[q.correct]}</span>
+                </div>
+                <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderLeft:"3px solid #d97706",borderRadius:"0 8px 8px 0",padding:"9px 13px"}}>
+                  <p style={{color:"#78350f",fontSize:12,margin:0}}>💡 {q.explanation}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <button onClick={onRetry} style={{background:PRI,border:"none",borderRadius:10,padding:"15px",color:"white",fontSize:15,fontWeight:700,transition:"background 0.15s"}}
+            onMouseOver={e=>e.currentTarget.style.background=PRI2}
+            onMouseOut={e=>e.currentTarget.style.background=PRI}>Retake Exam</button>
+          <button onClick={onHome} style={{background:"#f0fdfa",border:"1px solid #ccfbf1",borderRadius:10,padding:"15px",color:"#374151",fontSize:15,fontWeight:600}}>← Back to Home</button>
+        </div>
+      </div>
+    );
+  }
+
+  function App(){
+    const [screen,setScreen]=useState("home");
+    const [result,setResult]=useState(null);
+    const [lastResult,setLastResult]=useState(null);
+
+    function handleFinish(r){
+      const pct=(r.correct/r.total)*100;
+      setLastResult({...r,pct,passed:pct>=74});
+      setResult(r);
+      setScreen("results");
+    }
+
+    return(
+      <div style={{minHeight:"100vh",background:"#f0fdfa"}}>
+        <Nav screen={screen} setScreen={setScreen}/>
+        {screen==="home"    && <Home onStart={()=>setScreen("exam")} onStudy={()=>setScreen("study")} onReview={()=>setScreen("review")} lastResult={lastResult}/>}
+        {screen==="study"   && <Study/>}
+        {screen==="review"  && <Review/>}
+        {screen==="exam"    && <Exam onFinish={handleFinish}/>}
+        {screen==="results" && result && <Results result={result} onRetry={()=>setScreen("exam")} onHome={()=>setScreen("home")}/>}
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
