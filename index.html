@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CSM Exam Simulator 2026</title>
+  <title>PRINCE2® Exam Simulator 2026</title>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #f0fdfa; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; min-height: 100vh; }
+    body { background: #f5f3ef; font-family: 'Inter', system-ui, sans-serif; color: #1a1a1a; min-height: 100vh; }
     button { font-family: 'Inter', system-ui, sans-serif; cursor: pointer; }
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #ccfbf1; }
-    ::-webkit-scrollbar-thumb { background: #5eead4; border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: #e8e4dc; }
+    ::-webkit-scrollbar-thumb { background: #b8b0a0; border-radius: 3px; }
     @keyframes tick { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
     @keyframes pulseRed { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.5)} 50%{box-shadow:0 0 0 10px rgba(220,38,38,0)} }
     @keyframes fadeSlide { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
@@ -26,104 +26,175 @@
 <script type="text/babel">
   const { useState, useEffect, useRef } = React;
 
-  const PRI  = "#0f766e";
-  const PRI2 = "#0d9488";
-  const PBDR = "#ccfbf1";
-  const PTXT = "#134e4a";
-
+  // ─── Question Bank ───────────────────────────────────────────────────────────
   const BASE_Q = [
-    // Scrum Foundations
-    {id:1,  theme:"Scrum Foundations", question:"What is the primary purpose of Scrum?", options:["To eliminate the need for documentation","To deliver value iteratively and incrementally in complex environments","To replace traditional project management entirely","To maximize the number of features delivered"], correct:1, explanation:"Scrum is a lightweight framework for developing and delivering products in complex environments, emphasizing iterative delivery of value and continuous improvement."},
-    {id:2,  theme:"Scrum Foundations", question:"Which statement about Scrum is TRUE?", options:["Scrum is a methodology with detailed prescriptive rules","Scrum is a framework — intentionally incomplete by design","Scrum can only be used for software development","Scrum requires a Project Manager role"], correct:1, explanation:"Scrum is a framework, not a methodology. It is intentionally incomplete, providing structure while leaving room for teams to determine specifics of their work."},
-    {id:3,  theme:"Scrum Foundations", question:"Scrum is based on which type of process control?", options:["Defined process control","Empirical process control","Statistical process control","Predictive process control"], correct:1, explanation:"Scrum is founded on empirical process control — decisions are based on observation, experience, and experimentation rather than detailed upfront planning."},
-    {id:4,  theme:"Scrum Foundations", question:"Which of the following is NOT a Scrum value?", options:["Courage","Transparency","Commitment","Velocity"], correct:3, explanation:"The five Scrum values are Commitment, Focus, Openness, Respect, and Courage. Velocity is a metric, not a Scrum value."},
-    {id:5,  theme:"Scrum Foundations", question:"The three pillars of Scrum are:", options:["Planning, Execution, Review","Transparency, Inspection, Adaptation","Vision, Delivery, Retrospection","Commitment, Focus, Openness"], correct:1, explanation:"Transparency (visible process and progress), Inspection (frequent checks), and Adaptation (adjusting based on what's found) are the three empirical pillars that support all of Scrum."},
-    {id:6,  theme:"Scrum Foundations", question:"Which statement about the Sprint is correct?", options:["Sprints can be extended if work is unfinished","A new Sprint begins immediately after the previous one ends","Sprints must be exactly two weeks","The Sprint length can change every Sprint"], correct:1, explanation:"A new Sprint starts immediately after the conclusion of the previous Sprint. There is no gap between Sprints. Sprint length should remain consistent."},
-    {id:7,  theme:"Scrum Foundations", question:"What is the maximum length of a Sprint?", options:["2 weeks","3 weeks","1 month","6 weeks"], correct:2, explanation:"Sprints are limited to one calendar month. Shorter Sprints reduce risk and increase learning cycles. The Scrum Team chooses the length that best suits their needs."},
-    {id:8,  theme:"Scrum Foundations", question:"During a Sprint, which of the following is true about scope?", options:["Scope is completely fixed and cannot change","Scope can be clarified and renegotiated with the Product Owner","The Scrum Master can add items to the Sprint","Stakeholders can add work directly to the Sprint Backlog"], correct:1, explanation:"Scope may be clarified and renegotiated between the Product Owner and Developers as more is learned. However, no changes should endanger the Sprint Goal."},
-    // Scrum Roles
-    {id:9,  theme:"Scrum Roles", question:"Who is responsible for maximizing the value of the product?", options:["Scrum Master","Development Team","Product Owner","Stakeholders"], correct:2, explanation:"The Product Owner is solely responsible for maximizing the value of the product and the work of the Development Team. They manage and prioritize the Product Backlog."},
-    {id:10, theme:"Scrum Roles", question:"The Scrum Master's role is BEST described as:", options:["Project manager for the team","Servant-leader who helps the team apply Scrum","Technical lead who approves all decisions","Coordinator between developers and management"], correct:1, explanation:"The Scrum Master is a servant-leader — they serve the team, the Product Owner, and the organization by promoting and supporting Scrum theory, practices, rules, and values."},
-    {id:11, theme:"Scrum Roles", question:"Who can change the Sprint Backlog during a Sprint?", options:["Product Owner only","Scrum Master only","Only the Development Team","The entire Scrum Team"], correct:2, explanation:"The Sprint Backlog belongs to the Development Team. Only they can change it during the Sprint. The Product Owner can negotiate scope but cannot unilaterally change the Sprint Backlog."},
-    {id:12, theme:"Scrum Roles", question:"The Development Team is BEST described as:", options:["A group of specialists managed by a Team Lead","A self-organizing, cross-functional group of professionals","Developers only — testers are separate","A team managed by the Scrum Master"], correct:1, explanation:"The Development Team is self-organizing (decides how to do the work) and cross-functional (has all the skills needed to deliver a Done Increment each Sprint)."},
-    {id:13, theme:"Scrum Roles", question:"What is the recommended size of the Development Team?", options:["2–4 people","3–9 people","5–12 people","No restriction"], correct:1, explanation:"The Development Team should be 3–9 people. Fewer than 3 limits skill diversity; more than 9 requires too much coordination. The Product Owner and Scrum Master are not counted unless also doing development work."},
-    {id:14, theme:"Scrum Roles", question:"Can one person be both the Scrum Master and Product Owner?", options:["Yes, it is recommended on small teams","Yes, but it is discouraged","No, the roles must always be separate people","Only with approval from the organization"], correct:1, explanation:"While not explicitly prohibited, combining the roles is strongly discouraged. The two roles have different and sometimes conflicting responsibilities — the PO prioritizes value, the SM serves the team."},
-    {id:15, theme:"Scrum Roles", question:"The Product Owner is the sole person responsible for managing the:", options:["Sprint Backlog","Release Plan","Product Backlog","Definition of Done"], correct:2, explanation:"The Product Owner manages the Product Backlog — its content, availability, and ordering. The Development Team may help with refinement, but the PO is accountable."},
-    {id:16, theme:"Scrum Roles", question:"How does the Scrum Master help the organization?", options:["By managing project budgets","By leading and training the organization in Scrum adoption","By reporting team velocity to management","By approving all technical architecture decisions"], correct:1, explanation:"The Scrum Master serves the organization by leading and coaching Scrum adoption, planning Scrum implementations, and helping people understand Scrum theory and practice."},
-    // Scrum Events
-    {id:17, theme:"Scrum Events", question:"What are the five Scrum events?", options:["Sprint, Planning, Standup, Review, Retro","Sprint, Sprint Planning, Daily Scrum, Sprint Review, Sprint Retrospective","Sprint, Backlog Refinement, Daily Standup, Review, Retrospective","Planning, Development, Testing, Review, Release"], correct:1, explanation:"The five Scrum events are: Sprint (the container), Sprint Planning, Daily Scrum, Sprint Review, and Sprint Retrospective. All are time-boxed and serve as formal opportunities for inspection and adaptation."},
-    {id:18, theme:"Scrum Events", question:"The Daily Scrum is designed to:", options:["Report status to the Scrum Master","Create a plan for the next 24 hours and inspect progress toward the Sprint Goal","Allow the Product Owner to check on progress","Document what each developer completed yesterday"], correct:1, explanation:"The Daily Scrum creates a plan for the next 24 hours and inspects progress toward the Sprint Goal. It is for the Development Team, not a status report to management."},
-    {id:19, theme:"Scrum Events", question:"Who facilitates the Sprint Retrospective?", options:["Product Owner","An external facilitator","Scrum Master","Most senior Developer"], correct:2, explanation:"The Scrum Master facilitates the Sprint Retrospective and ensures it is positive and productive. They participate as a peer team member accountable for the Scrum process."},
-    {id:20, theme:"Scrum Events", question:"What is the PRIMARY outcome of Sprint Planning?", options:["A detailed project plan","A Sprint Goal and Sprint Backlog","An updated Product Backlog","A release schedule"], correct:1, explanation:"Sprint Planning produces a Sprint Goal (why) and a Sprint Backlog (what and how). The Sprint Goal provides focus and coherence; the Sprint Backlog is the plan to achieve it."},
-    {id:21, theme:"Scrum Events", question:"The Sprint Review is NOT:", options:["A demo of the Increment","A time to inspect the Increment and adapt the Product Backlog","A formal sign-off or acceptance meeting","An informal working session with stakeholders"], correct:2, explanation:"The Sprint Review is an informal working session — not a formal sign-off or gate review. It is an opportunity to inspect the Increment and adapt the Product Backlog based on feedback."},
-    {id:22, theme:"Scrum Events", question:"The Sprint Retrospective focuses on:", options:["What was built during the Sprint","People, relationships, process and tools — ways to improve effectiveness","Stakeholder feedback on the product","Updating the Product Backlog for the next Sprint"], correct:1, explanation:"The Sprint Retrospective inspects how the last Sprint went with regard to people, relationships, process, and tools — and identifies improvements to implement in the next Sprint."},
-    {id:23, theme:"Scrum Events", question:"Backlog Refinement in Scrum is:", options:["A mandatory Sprint event with a fixed timebox","An ongoing activity, not a formal Scrum event","Done only during Sprint Planning","The Product Owner's responsibility alone"], correct:1, explanation:"Backlog Refinement is an ongoing activity — not a formal Scrum event. The Development Team usually spends no more than 10% of its capacity on refinement. It ensures backlog items are ready for future Sprints."},
-    {id:24, theme:"Scrum Events", question:"What is the time-box for the Sprint Review?", options:["2 hours","4 hours for a one-month Sprint","8 hours","1 hour per week of Sprint length"], correct:1, explanation:"The Sprint Review is time-boxed to 4 hours for a one-month Sprint. For shorter Sprints, it is usually proportionally shorter."},
-    // Scrum Artifacts
-    {id:25, theme:"Scrum Artifacts", question:"The Product Backlog is:", options:["A fixed list of all requirements for the product","An emergent, ordered list of everything needed to improve the product","A document owned jointly by the team and stakeholders","A list of bugs and defects only"], correct:1, explanation:"The Product Backlog is an emergent, ordered list of what is needed to improve the product. It is the single source of work for the Scrum Team and is never 'complete'."},
-    {id:26, theme:"Scrum Artifacts", question:"Which statement about the Definition of Done is correct?", options:["It is created once and never changed","It is the same as acceptance criteria","It is a shared understanding of what it means for work to be complete","It is only relevant for the final release"], correct:2, explanation:"The Definition of Done is a shared understanding within the Scrum Team of what it means for work to be complete. It ensures transparency and quality, and may evolve over time."},
-    {id:27, theme:"Scrum Artifacts", question:"What does a 'potentially releasable Increment' mean?", options:["The product is ready for marketing","The Increment meets the Definition of Done and could be released","All planned features are complete","The Product Owner has approved the release"], correct:1, explanation:"A potentially releasable Increment is one that meets the Definition of Done. The Product Owner decides whether to actually release it — the team's job is to make it releasable every Sprint."},
-    {id:28, theme:"Scrum Artifacts", question:"Who is responsible for ordering the Product Backlog?", options:["The Development Team","The Scrum Master","Stakeholders collectively","The Product Owner"], correct:3, explanation:"The Product Owner is responsible for ordering the Product Backlog to best achieve goals and missions. Higher-ordered items are usually clearer and more detailed than lower-ordered items."},
-    {id:29, theme:"Scrum Artifacts", question:"The Sprint Backlog consists of:", options:["All items in the Product Backlog","The Sprint Goal, selected PBIs, and the plan to deliver the Increment","Only the tasks assigned to each Developer","The items the Product Owner chose for the Sprint"], correct:1, explanation:"The Sprint Backlog is made up of the Sprint Goal (why), the set of Product Backlog items selected for the Sprint (what), and a plan for delivering the Increment (how)."},
-    {id:30, theme:"Scrum Artifacts", question:"What happens to incomplete Sprint Backlog items at the end of a Sprint?", options:["They are automatically carried over to the next Sprint","They are removed from the Product Backlog","They are returned to the Product Backlog for re-ordering","The Sprint is extended to complete them"], correct:2, explanation:"Incomplete items are returned to the Product Backlog. The Product Owner re-orders them based on current priorities. Sprints are never extended — they end on the fixed date."},
-    // CSM Specific
-    {id:31, theme:"CSM Specific", question:"The Scrum Alliance requires CSM holders to:", options:["Retake the exam every year","Earn Scrum Education Units (SEUs) and renew every 2 years","Pass an advanced exam within 6 months","Complete a project using Scrum within 1 year"], correct:1, explanation:"CSM certification requires renewal every 2 years. Holders must earn Scrum Education Units (SEUs) to demonstrate continued learning and renew their certification."},
-    {id:32, theme:"CSM Specific", question:"Which statement about self-organizing teams is TRUE?", options:["They need a manager to assign work","They choose how best to accomplish their work — no one tells them","They are unstructured and have no accountability","Self-organization means no deadlines or commitments"], correct:1, explanation:"Self-organizing teams choose how best to accomplish their work. No one — not the Scrum Master, Product Owner, or anyone outside — tells them how to do it. They are still accountable for results."},
-    {id:33, theme:"CSM Specific", question:"A Scrum Master notices team members are working in silos and not collaborating. The BEST response is to:", options:["Report the issue to management","Assign collaboration tasks in the Sprint Backlog","Facilitate conversations and coach the team on cross-functional working","Reorganize the team structure"], correct:2, explanation:"The Scrum Master's role is to coach and facilitate. They should create conditions for collaboration — facilitating discussions, removing barriers, and helping the team understand the value of cross-functionality."},
-    {id:34, theme:"CSM Specific", question:"Technical debt in Scrum should be:", options:["Ignored until the end of the project","Tracked and addressed as part of the team's commitment to quality","Managed exclusively by the Product Owner","Documented and deferred to a hardening Sprint"], correct:1, explanation:"Technical debt should be made transparent and addressed regularly. The Development Team is responsible for maintaining quality. Hardening Sprints are an anti-pattern in Scrum."},
-    {id:35, theme:"CSM Specific", question:"A stakeholder requests a feature directly from a Developer during the Sprint. The Developer should:", options:["Implement it if it's small enough","Decline and direct the stakeholder to the Product Owner","Ask the Scrum Master for permission","Add it to the Sprint Backlog immediately"], correct:1, explanation:"Developers should direct all requests through the Product Owner who manages the Product Backlog. Adding work directly to the Sprint without PO involvement undermines the Sprint Goal and Scrum process."},
-    {id:36, theme:"CSM Specific", question:"What is 'velocity' in Scrum?", options:["A mandatory Scrum metric for all teams","A measure of how fast individuals work","The amount of work a team completes per Sprint, used for forecasting","The speed at which the Product Backlog is refined"], correct:2, explanation:"Velocity is the amount of work (usually in story points) completed per Sprint. It is used by the team for internal forecasting — it is not a performance metric and should not be compared across teams."},
-    {id:37, theme:"Scrum Foundations", question:"Which of the following BEST describes an agile mindset?", options:["Delivering everything planned upfront","Embracing change, collaboration, and continuous improvement","Following a detailed process rigorously","Maximizing individual productivity"], correct:1, explanation:"An agile mindset embraces change as a positive, values collaboration over processes, and seeks to continuously improve. It prioritizes responding to change over following a fixed plan."},
-    {id:38, theme:"Scrum Roles", question:"The Product Owner can delegate Product Backlog management tasks but:", options:["Loses accountability when they do","Remains accountable for the outcomes","Must get Scrum Master approval first","Can only delegate to senior Developers"], correct:1, explanation:"The Product Owner may delegate Product Backlog management work to others, but they remain ultimately accountable. Delegation does not transfer accountability."},
-    {id:39, theme:"Scrum Events", question:"The Daily Scrum should be held:", options:["Only when there are blockers","At the same time and place each day to reduce complexity","Whenever the Scrum Master decides","Before Sprint Planning each day"], correct:1, explanation:"The Daily Scrum is held at the same time and place each working day of the Sprint. Consistency reduces coordination overhead and keeps it simple."},
-    {id:40, theme:"Scrum Artifacts", question:"When should the Definition of Done be created?", options:["After the first Sprint is complete","Before the first Sprint begins","At the first Sprint Retrospective","When the Product Owner requests it"], correct:1, explanation:"The Definition of Done should be created before Sprint work begins so the team has a shared understanding of quality standards from the outset. If an organizational standard exists, the team must use it as a minimum."},
+    // Principles
+    {id:1,  theme:"Principles", question:"How many principles underpin PRINCE2 7th Edition?", options:["5","6","7","8"], correct:2, explanation:"PRINCE2 7th Edition has 7 principles: Ensure ongoing viability, Learn from experience, Defined roles & responsibilities, Manage by stages, Manage by exception, Focus on products, Tailor to suit the project."},
+    {id:2,  theme:"Principles", question:"Which PRINCE2 principle ensures the project remains worthwhile throughout?", options:["Manage by exception","Focus on products","Ensure ongoing viability","Learn from experience"], correct:2, explanation:"'Ensure ongoing viability' means the project must have a justifiable reason to start and continue. The Business Case is reviewed at every stage boundary."},
+    {id:3,  theme:"Principles", question:"'Manage by exception' in PRINCE2 means:", options:["The PM manages all decisions personally","Tolerances are set and escalation occurs only when breached","All exceptions are logged in the risk register","The board manages day-to-day project activities"], correct:1, explanation:"Tolerances are set for time, cost, quality, scope, risk and benefits. If a forecast shows a tolerance will be exceeded, the issue escalates to the next management level."},
+    {id:4,  theme:"Principles", question:"Which principle requires lessons to be sought, recorded and acted upon?", options:["Focus on products","Tailor to suit the project","Learn from experience","Defined roles and responsibilities"], correct:2, explanation:"'Learn from experience' requires teams to seek lessons at the start, during, and at the end of the project, and actively apply them going forward."},
+    {id:5,  theme:"Principles", question:"'Focus on products' means PRINCE2 projects are:", options:["Activity-led","Output-led","Budget-led","Resource-led"], correct:1, explanation:"PRINCE2 is output-led — products are defined before activities are planned. Product Descriptions drive all planning and quality activities."},
+    {id:6,  theme:"Principles", question:"Which principle divides the project into manageable, sequential sections?", options:["Manage by exception","Tailor to suit the project","Manage by stages","Focus on products"], correct:2, explanation:"'Manage by stages' divides the project into sequential management stages. Each stage has its own plan and must be authorized by the board before starting."},
+    {id:7,  theme:"Principles", question:"'Tailor to suit the project' means:", options:["PRINCE2 can be ignored for small projects","The method is adapted to the project's size, environment and complexity","Only selected themes are applied","The PM decides which principles to follow"], correct:1, explanation:"All 7 principles always apply, but PRINCE2 must be tailored — the level of formality and documentation should match the project context."},
+    // Practices
+    {id:8,  theme:"Practices", question:"What document is at the heart of the Business Case practice?", options:["Project Brief","Project Initiation Document","Business Case","Benefits Management Approach"], correct:2, explanation:"The Business Case is the central document justifying ongoing viability. It is developed in SU, refined in IP, maintained throughout, and confirmed at closure."},
+    {id:9,  theme:"Practices", question:"Which practice addresses how the project will be controlled and reported on?", options:["Business Case","Progress","Risk","Quality"], correct:1, explanation:"The Progress practice covers performance monitoring, tolerance management, reporting mechanisms, and escalation procedures."},
+    {id:10, theme:"Practices", question:"In the Risk practice, risks are assessed using:", options:["Probability and impact","Threat and opportunity categorisation only","Expected monetary value only","Risk appetite statements"], correct:0, explanation:"Risks are assessed by estimating probability (likelihood of occurring) and impact (effect on project objectives) to produce an overall risk evaluation."},
+    {id:11, theme:"Practices", question:"A Product Description contains all of the following EXCEPT:", options:["Quality criteria","Composition","Cost of the product","Purpose"], correct:2, explanation:"Product Descriptions contain purpose, composition, derivation, format, quality criteria and quality method — cost is captured in the plan, not the Product Description."},
+    {id:12, theme:"Practices", question:"Which document describes how quality will be managed across the whole project?", options:["Quality Register","Quality Management Approach","Product Description","Project Initiation Document"], correct:1, explanation:"The Quality Management Approach defines the quality standards, responsibilities, techniques and controls applicable to the project."},
+    {id:13, theme:"Practices", question:"The Issues practice deals with which three types of issue?", options:["Risks, quality failures and complaints","Requests for change, off-specifications and general issues","Off-specifications, risks and stakeholder concerns","General issues, risks and changes"], correct:1, explanation:"PRINCE2 categories issues as: requests for change (RFC), off-specifications (products not meeting their description), and general issues/concerns."},
+    {id:14, theme:"Practices", question:"What is the primary purpose of the Plans practice?", options:["To track time and cost only","To facilitate communication and control by defining how and when products will be delivered","To create a detailed Gantt chart","To allocate resources to activities"], correct:1, explanation:"Plans provide the basis for communication and control — defining what will be delivered, when, by whom, at what cost, and to what quality."},
+    {id:15, theme:"Practices", question:"Which practice was introduced in PRINCE2 7th Edition, replacing 'Organisation'?", options:["People","Governance","Stakeholder Engagement","Leadership"], correct:0, explanation:"The 'People' practice is new in PRINCE2 7. It replaces the 6th Edition 'Organisation' theme with a broader focus on people skills, culture and engagement."},
+    {id:16, theme:"Practices", question:"The Benefits Management Approach is first created during:", options:["Starting Up a Project","Initiating a Project","Managing a Stage Boundary","Closing a Project"], correct:1, explanation:"The Benefits Management Approach is created during Initiating a Project. It defines how and when benefits will be measured and reviewed post-project."},
+    {id:17, theme:"Practices", question:"In PRINCE2 7, how many tolerance areas are there?", options:["4","5","6","7"], correct:2, explanation:"PRINCE2 defines 6 tolerance areas: time, cost, quality, scope, risk, and benefits. Tolerances can be set at project, stage and team levels."},
+    // Processes
+    {id:18, theme:"Processes", question:"Which process produces the Project Brief?", options:["Initiating a Project","Starting Up a Project","Directing a Project","Managing a Stage Boundary"], correct:1, explanation:"Starting Up a Project (SU) produces the Project Brief, which provides enough information for the board to decide whether to authorize the Initiation Stage."},
+    {id:19, theme:"Processes", question:"The Project Initiation Document (PID) is produced during:", options:["Starting Up a Project","Directing a Project","Initiating a Project","Controlling a Stage"], correct:2, explanation:"The PID is the key output of Initiating a Project (IP). It defines objectives, approach, controls, tolerances and all management strategies for the project."},
+    {id:20, theme:"Processes", question:"Which PRINCE2 process is carried out by the Project Board throughout the project?", options:["Controlling a Stage","Managing Product Delivery","Directing a Project","Managing a Stage Boundary"], correct:2, explanation:"Directing a Project (DP) is the Project Board's process — authorizing stages, providing direction, and making key decisions via management by exception."},
+    {id:21, theme:"Processes", question:"'Controlling a Stage' is primarily the responsibility of:", options:["The Project Board","The Project Manager","Team Managers","The Executive"], correct:1, explanation:"Controlling a Stage (CS) is performed by the Project Manager — covering day-to-day management, authorizing Work Packages and managing issues within tolerance."},
+    {id:22, theme:"Processes", question:"Which process governs the interface between the Project Manager and Team Managers?", options:["Controlling a Stage","Directing a Project","Managing Product Delivery","Managing a Stage Boundary"], correct:2, explanation:"Managing Product Delivery (MPD) manages the relationship between PM and Team Managers — work is authorized via Work Packages and accepted on completion."},
+    {id:23, theme:"Processes", question:"Managing a Stage Boundary is performed:", options:["At the end of every management stage","Only at the very final stage","Whenever a new risk is identified","At the very start of the project"], correct:0, explanation:"Managing a Stage Boundary (SB) is performed near the end of each management stage to update plans and reports, and seek board authorization for the next stage."},
+    {id:24, theme:"Processes", question:"Which process produces the End Project Report?", options:["Managing a Stage Boundary","Closing a Project","Directing a Project","Controlling a Stage"], correct:1, explanation:"Closing a Project (CP) produces the End Project Report, Lessons Report, and Follow-on Action Recommendations before the board authorizes project closure."},
+    {id:25, theme:"Processes", question:"An Exception Plan is created when:", options:["A stage is completed on time","A tolerance is forecast to be exceeded","A new risk is identified and logged","A team manager requests additional resources"], correct:1, explanation:"When a Stage Plan or Project Plan is forecast to breach its tolerances, the PM raises an Exception Report and may be asked to create an Exception Plan."},
+    {id:26, theme:"Processes", question:"What triggers Starting Up a Project?", options:["The Project Brief","A project mandate from corporate or programme management","The Project Initiation Document","The Business Case"], correct:1, explanation:"Starting Up a Project is triggered by a project mandate — a request or instruction from corporate/programme management to investigate starting a project."},
+    // Roles
+    {id:27, theme:"Roles", question:"Who chairs the Project Board in PRINCE2?", options:["Project Manager","Senior User","Executive","Senior Supplier"], correct:2, explanation:"The Executive chairs the Project Board and is ultimately accountable for the project. They own the Business Case and represent the business/commissioning body interests."},
+    {id:28, theme:"Roles", question:"The Senior User role is accountable for:", options:["Providing supplier resources","Specifying the need and ensuring benefits are realized","Chairing the Project Board","Day-to-day project management"], correct:1, explanation:"The Senior User represents those who will use the project outputs — they specify requirements, ensure fitness for purpose, and are accountable for benefit realization."},
+    {id:29, theme:"Roles", question:"The Project Manager is responsible for:", options:["Authorizing each management stage","Day-to-day project management on behalf of the Project Board","Managing individual team members personally","Writing and owning the Business Case"], correct:1, explanation:"The PM manages the project day-to-day within the constraints (tolerances and direction) agreed with the Project Board."},
+    {id:30, theme:"Roles", question:"The Change Authority is responsible for:", options:["Approving the overall project","Approving or rejecting requests for change within delegated limits","Maintaining the Issue Register","Creating Product Descriptions"], correct:1, explanation:"The Change Authority is delegated authority by the Project Board to approve or reject RFCs within defined financial or other limits, reducing board workload."},
+    {id:31, theme:"Roles", question:"Team Managers are accountable to the Project Manager for:", options:["Authorizing stage budgets","Delivering the agreed Work Package products to specification","Approving the Project Brief","Chairing team-level risk reviews"], correct:1, explanation:"Team Managers are responsible for the day-to-day management of teams and are accountable to the PM for delivering work packages to agreed quality, time and cost."},
+    {id:32, theme:"Roles", question:"Project Assurance in PRINCE2 is the responsibility of:", options:["The Project Manager","Project Support","Each Project Board member for their own area of interest","The PMO only"], correct:2, explanation:"Project Assurance is the board's responsibility — each member assures their area: Executive (business), Senior User (user requirements), Senior Supplier (technical/supplier)."},
+    {id:33, theme:"Roles", question:"Project Support provides:", options:["Independent assurance to the Project Board","Administrative and specialist support to the Project Manager","Strategic direction for the project","Quality inspections of project products"], correct:1, explanation:"Project Support provides administrative assistance to the PM — maintaining project files, running tools, providing PRINCE2 expertise, and managing the configuration."},
+    // Documents
+    {id:34, theme:"Documents", question:"The Work Package is issued by:", options:["Project Board to the Project Manager","Project Manager to Team Managers","Team Manager to individual team members","Executive to the Project Manager"], correct:1, explanation:"The Project Manager issues Work Packages to Team Managers (or directly to team members) to formally authorize and define work to be carried out."},
+    {id:35, theme:"Documents", question:"Which report is produced at the end of each management stage?", options:["Highlight Report","Checkpoint Report","End Stage Report","Exception Report"], correct:2, explanation:"The End Stage Report is produced by the PM at the end of each stage. It summarizes performance and is used by the board in their authorization decision."},
+    {id:36, theme:"Documents", question:"Highlight Reports are submitted to the Project Board:", options:["Daily during a stage","Only at stage end","At regular intervals during a stage as defined in the Communication Management Approach","Only when issues or risks arise"], correct:2, explanation:"Highlight Reports are time-driven progress reports sent by the PM to the board at a frequency agreed in the Communication Management Approach."},
+    {id:37, theme:"Documents", question:"A Checkpoint Report is produced by:", options:["The Project Manager for the board","Team Managers for the Project Manager","The Executive for the programme","Project Assurance for the board"], correct:1, explanation:"Team Managers (or team members if no Team Manager) produce Checkpoint Reports for the PM at intervals defined in the Work Package, covering team-level progress."},
+    {id:38, theme:"Documents", question:"The Lessons Report is PRIMARILY produced during:", options:["Starting Up a Project","Initiating a Project","Closing a Project (and optionally at stage boundaries)","Directing a Project"], correct:2, explanation:"The Lessons Report must be produced during Closing a Project. It can also be produced at stage boundaries to share learning earlier in the project."},
+    {id:39, theme:"Documents", question:"Which register records all identified risks on the project?", options:["Issue Register","Daily Log","Risk Register","Lessons Log"], correct:2, explanation:"The Risk Register records all identified threats and opportunities — their description, probability, impact, owner, response actions and current status."},
+    {id:40, theme:"Documents", question:"The Daily Log is used by the Project Manager to:", options:["Record formal issues and risks","Track informal issues, actions and personal notes during a stage","Report progress to the Project Board","Record quality inspection results"], correct:1, explanation:"The Daily Log is the PM's informal diary — used to track minor issues, to-dos and personal notes that don't warrant a formal entry in other registers."},
+    // ── 80 additional unique questions ───────────────────────────────────────
+    {id:41, theme:"Principles", question:"Which PRINCE2 principle states that a project should have an unambiguous chain of authority?", options:["Manage by stages","Defined roles and responsibilities","Continued business justification","Focus on products"], correct:1, explanation:"Defined roles and responsibilities ensures there is an agreed set of roles with clear accountability — no ambiguity about who is responsible for what."},
+    {id:42, theme:"Principles", question:"In PRINCE2, 'Learn from experience' means:", options:["Only reviewing lessons at project close","Teams should seek and apply lessons throughout the project — not just at the end","Lessons are optional if the project is on track","Only the PM is responsible for capturing lessons"], correct:1, explanation:"PRINCE2 teams actively seek lessons from previous projects at start, apply them throughout, and pass them on at close — it is an ongoing activity, not just a closing task."},
+    {id:43, theme:"Principles", question:"Which principle underpins the concept of tolerances and exception reports?", options:["Focus on products","Manage by exception","Continued business justification","Tailor to suit the project"], correct:1, explanation:"Manage by exception establishes tolerances for delegated authority. If a plan is forecast to exceed tolerance, an exception is escalated — this enables efficient governance."},
+    {id:44, theme:"Principles", question:"'Continued business justification' requires that:", options:["The business case is written once and filed","The justification is reviewed and remains valid throughout the project","The Project Manager writes the business case","ROI must be positive from day one"], correct:1, explanation:"The business case must remain valid throughout — if it no longer justifies the project, PRINCE2 mandates the project should be stopped."},
+    {id:45, theme:"Principles", question:"Which PRINCE2 principle directly supports the use of stage boundaries?", options:["Manage by exception","Continued business justification","Manage by stages","Learn from experience"], correct:2, explanation:"Manage by stages divides the project into sequential stages with formal review points — enabling the Project Board to authorise work one stage at a time."},
+    {id:46, theme:"Principles", question:"Tailoring PRINCE2 involves:", options:["Removing all documentation","Adapting the method's application to the project's size, complexity, and environment","Ignoring principles that don't apply","Using a different lifecycle model"], correct:1, explanation:"Tailoring ensures PRINCE2 is applied appropriately — not all projects need every document at maximum detail. The principles are always applied; the practices and processes are scaled."},
+    {id:47, theme:"Practices", question:"Which PRINCE2 practice is concerned with identifying, assessing and controlling uncertainties?", options:["Issues","Quality","Risk","Change"], correct:2, explanation:"The Risk practice identifies and manages threats and opportunities that could affect project objectives — it includes identification, assessment, planning responses and implementation."},
+    {id:48, theme:"Practices", question:"The purpose of the Quality practice is to:", options:["Ensure deliverables meet customer expectations defined in the Project Product Description","Manage project tolerances","Define reporting frequency","Authorise stage transitions"], correct:0, explanation:"The Quality practice ensures products meet requirements by planning, controlling and verifying quality — centred on the Project Product Description and Product Descriptions."},
+    {id:49, theme:"Practices", question:"In PRINCE2, what is a 'threat'?", options:["An uncertain event with positive impact","An uncertain event with negative impact","A stakeholder concern","A known cost overrun"], correct:1, explanation:"In PRINCE2 Risk practice, a threat is an uncertain event that, if it occurs, would have a negative effect on project objectives. Opportunities have positive effects."},
+    {id:50, theme:"Practices", question:"Which risk response is used to reduce the probability or impact of a threat?", options:["Avoid","Transfer","Reduce","Accept"], correct:2, explanation:"Reduce involves taking proactive action to reduce either the probability of a threat occurring or its impact if it does occur."},
+    {id:51, theme:"Practices", question:"Which risk response for opportunities means taking action to ensure the opportunity is realised?", options:["Share","Enhance","Exploit","Accept"], correct:2, explanation:"Exploit means taking deliberate action to ensure the opportunity definitely happens — it is the most proactive positive risk response."},
+    {id:52, theme:"Practices", question:"The Issues practice in PRINCE2 covers which types of issue?", options:["Risks, problems, queries","Request for change, off-specification, problem/concern","Threats, opportunities, constraints","Budget, schedule, quality"], correct:1, explanation:"PRINCE2's Issues practice covers three types: Request for Change (change to baseline), Off-Specification (failure to meet spec), and Problem/Concern (anything else)."},
+    {id:53, theme:"Practices", question:"An off-specification in PRINCE2 is:", options:["A request to change an approved baseline","Something that should be provided but is not, or is forecast not to be","A stakeholder complaint","A budget variance"], correct:1, explanation:"An off-specification is something the project should provide but currently is not providing — or is forecast not to provide. It represents a deviation from agreed specification."},
+    {id:54, theme:"Practices", question:"Which PRINCE2 practice ensures stakeholders are identified, engaged and their communication needs are met?", options:["Risk","Issues","Organisational (People)","Plans"], correct:2, explanation:"The People practice (PRINCE2 7th edition) covers stakeholder engagement, communication approaches and ensuring the right people are involved and informed."},
+    {id:55, theme:"Practices", question:"The Plans practice provides a framework for:", options:["Assigning team members","Defining what products will be created and how, when and by whom","Managing quality reviews","Capturing risks"], correct:1, explanation:"The Plans practice creates the means to predict delivery of products — defining what is required, when, by whom and at what cost, enabling performance to be monitored."},
+    {id:56, theme:"Practices", question:"Which planning technique does PRINCE2 recommend for product-based planning?", options:["Gantt chart only","Product Breakdown Structure and Product Flow Diagram","Work Breakdown Structure","Network diagram only"], correct:1, explanation:"PRINCE2 recommends product-based planning using a Product Breakdown Structure (hierarchy of products) and Product Flow Diagram (sequence of product creation)."},
+    {id:57, theme:"Practices", question:"The Business Case practice is PRIMARILY concerned with:", options:["Tracking project costs","Defining and maintaining the rationale for undertaking the project","Writing the PID","Managing benefits realisation"], correct:1, explanation:"The Business Case practice ensures the project is and remains desirable, viable and achievable — it is the driving force behind every PRINCE2 project decision."},
+    {id:58, theme:"Practices", question:"In PRINCE2, who is responsible for realising the benefits after the project closes?", options:["Project Manager","Executive","Senior User","Project Assurance"], correct:2, explanation:"The Senior User is accountable for benefits realisation — they specify the desired outcomes and are responsible for ensuring they are achieved in the business after delivery."},
+    {id:59, theme:"Processes", question:"Which PRINCE2 process is triggered by a Project Mandate?", options:["Initiating a Project","Directing a Project","Starting Up a Project","Controlling a Stage"], correct:2, explanation:"Starting Up a Project is triggered by a Project Mandate and produces the Project Brief. It is a pre-project process to ensure the project is worthwhile before initiation begins."},
+    {id:60, theme:"Processes", question:"The Initiating a Project process produces which key document?", options:["Project Brief","Project Mandate","Project Initiation Documentation (PID)","Highlight Report"], correct:2, explanation:"The main output of Initiating a Project is the PID — which includes all the baseline plans and strategies that will govern the project."},
+    {id:61, theme:"Processes", question:"Which PRINCE2 process runs throughout the entire project?", options:["Controlling a Stage","Starting Up a Project","Directing a Project","Managing Product Delivery"], correct:2, explanation:"Directing a Project runs from pre-project until project closure — the Project Board makes key decisions and exercises overall control throughout."},
+    {id:62, theme:"Processes", question:"The main trigger for Closing a Project is:", options:["The Project Manager's decision","A request from the Project Board to deliver the End Stage Report","The Executive authorising project closure after the final stage","The last product being accepted"], correct:2, explanation:"Closing a Project is triggered by the Project Board during Directing a Project. The PM prepares for closure and hands back to the Project Board to formally close."},
+    {id:63, theme:"Processes", question:"Managing a Stage Boundary produces which document to plan the next stage?", options:["Stage Plan","Work Package","Exception Plan","Project Brief"], correct:0, explanation:"Managing a Stage Boundary produces the next Stage Plan (plus updated PID and Business Case) for the Project Board to review and authorise continuation."},
+    {id:64, theme:"Processes", question:"During Controlling a Stage, what does the Project Manager do when a Work Package is complete?", options:["Archive it","Receive a completed Work Package from the Team Manager and check products meet quality criteria","Update the Risk Register only","Report to the Project Board immediately"], correct:1, explanation:"When a Work Package is complete, the PM receives it back, checks the products meet quality criteria, and updates the Stage Plan — then authorises further work packages as needed."},
+    {id:65, theme:"Processes", question:"What is the purpose of the Managing Product Delivery process?", options:["Plan the next stage","Control the interface between the Project Manager and Team Managers for delivery of products","Report to the Project Board","Manage project risks"], correct:1, explanation:"Managing Product Delivery manages the interface between PM and Team Managers — Team Managers accept, execute and deliver Work Packages within agreed constraints."},
+    {id:66, theme:"Processes", question:"Which process raises an Exception Report when a stage is forecast to exceed tolerance?", options:["Directing a Project","Managing a Stage Boundary","Controlling a Stage","Managing Product Delivery"], correct:2, explanation:"The PM raises an Exception Report during Controlling a Stage when a stage is forecast to exceed its tolerances. The Project Board then decides how to proceed."},
+    {id:67, theme:"Roles", question:"Who is the single point of accountability for the project in PRINCE2?", options:["Project Manager","Senior Supplier","Executive","Project Assurance"], correct:2, explanation:"The Executive is the single point of accountability — they own the Business Case and are ultimately responsible for the project's success. The Project Board is chaired by the Executive."},
+    {id:68, theme:"Roles", question:"The Senior Supplier role represents:", options:["End users of the product","Those who provide resources and expertise to create project deliverables","The programme management office","External stakeholders"], correct:1, explanation:"The Senior Supplier represents the interests of those designing, developing, facilitating and procuring the project's products — they are accountable for the quality of supplier deliverables."},
+    {id:69, theme:"Roles", question:"Project Assurance in PRINCE2 is independent of:", options:["The Project Board","The Project Manager","Team Managers","Stakeholders"], correct:1, explanation:"Project Assurance is the Project Board's responsibility and must be independent of the Project Manager — it assures the Board that the project is being managed correctly."},
+    {id:70, theme:"Roles", question:"Who can be appointed to handle day-to-day Project Assurance tasks on behalf of the Project Board?", options:["Project Manager","Project Support","Project Assurance roles delegated to named individuals","Team Managers"], correct:2, explanation:"Project Board members may delegate Project Assurance to named individuals — but they retain accountability. The role cannot be delegated to the Project Manager."},
+    {id:71, theme:"Roles", question:"A Change Authority is set up to:", options:["Approve all project risks","Make decisions on requests for change within delegated limits, freeing up the Project Board","Write the Change Management Approach","Manage the Issue Register"], correct:1, explanation:"A Change Authority can be delegated decision-making power for requests for change — removing the burden from the Project Board for routine change decisions."},
+    {id:72, theme:"Roles", question:"The Project Manager's authority is limited by:", options:["The Senior User","The tolerances set in the Project Initiation Documentation","The Team Manager","Project Support"], correct:1, explanation:"The PM manages the project within the tolerances delegated by the Project Board. If forecast to exceed tolerance, they must escalate — they cannot decide alone."},
+    {id:73, theme:"Roles", question:"Which Project Board member is primarily concerned with the ongoing viability of the business case?", options:["Senior User","Senior Supplier","Executive","Project Assurance"], correct:2, explanation:"The Executive owns and is responsible for the Business Case throughout — ensuring the project remains justified from a business perspective."},
+    {id:74, theme:"Documents", question:"The Project Product Description describes:", options:["Individual deliverables within the project","The overall product the project must deliver, including customer quality expectations","The project schedule","The risk management approach"], correct:1, explanation:"The Project Product Description defines the overall output of the project — its purpose, composition, quality expectations and acceptance criteria. It drives quality planning."},
+    {id:75, theme:"Documents", question:"A Product Description includes which of the following?", options:["Budget allocation","Quality criteria, quality tolerance and quality method","Team member responsibilities","Risk probability ratings"], correct:1, explanation:"Product Descriptions define quality criteria (what quality must be demonstrated), quality tolerance (acceptable variance) and quality method (how quality will be checked)."},
+    {id:76, theme:"Documents", question:"The Configuration Management approach describes:", options:["How the team is structured","How products will be identified, tracked and protected against unauthorised change","How risks will be managed","How stakeholders will be communicated with"], correct:1, explanation:"Configuration Management defines how project products are identified, version-controlled, stored and protected — ensuring everyone works from the correct, authorised version."},
+    {id:77, theme:"Documents", question:"Which document records quality inspection results and sign-offs?", options:["Quality Register","Issue Register","Lessons Log","Daily Log"], correct:0, explanation:"The Quality Register records all planned and completed quality activities — including quality reviews, inspection results, and sign-offs against each product."},
+    {id:78, theme:"Documents", question:"An End Stage Report is produced:", options:["At the start of each stage","At the end of each management stage to report on stage performance","Daily by the Project Manager","Only at project close"], correct:1, explanation:"The End Stage Report is produced at the end of each management stage — it reports on stage performance and is reviewed by the Project Board before authorising the next stage."},
+    {id:79, theme:"Documents", question:"The Benefits Management Approach defines:", options:["How project risks are managed","How and when benefits will be measured during and after the project","The project reporting schedule","The change control process"], correct:1, explanation:"The Benefits Management Approach defines the expected benefits, how and when they will be measured, by whom, and what baseline measurements are needed."},
+    {id:80, theme:"Documents", question:"Which document gives Team Managers their instructions for a piece of work?", options:["Stage Plan","Project Initiation Document","Work Package","Checkpoint Report"], correct:2, explanation:"A Work Package is the agreement between the PM and Team Manager — it defines what is to be delivered, constraints, quality requirements, and reporting expectations."},
+    {id:81, theme:"Processes", question:"What is the purpose of the Project Brief?", options:["To formally authorise the project","To provide sufficient information to decide whether the project is viable before initiation begins","To plan the first stage","To define project tolerances"], correct:1, explanation:"The Project Brief is produced in Starting Up a Project — it provides the basis for a go/no-go decision on whether to proceed to Initiating a Project."},
+    {id:82, theme:"Practices", question:"In PRINCE2, quality planning involves creating which two documents?", options:["Risk Register and Issue Register","Quality Management Approach and Product Descriptions","Benefits Management Approach and Business Case","Lessons Log and Daily Log"], correct:1, explanation:"Quality planning produces the Quality Management Approach (how quality is managed) and Product Descriptions (what quality each product must achieve)."},
+    {id:83, theme:"Practices", question:"A quality review in PRINCE2 is a technique used to:", options:["Assess team performance","Inspect a product against its Product Description to check it meets quality criteria","Update the Risk Register","Plan the next stage"], correct:1, explanation:"A quality review is a structured review of a product against its Product Description — checking that it meets defined quality criteria before being signed off as complete."},
+    {id:84, theme:"Roles", question:"The Project Manager may also perform which role in a smaller project?", options:["Executive","Senior User","Team Manager","Project Assurance"], correct:2, explanation:"On smaller projects, the PM may also act as the Team Manager — directly managing delivery. This is a common tailoring option in PRINCE2."},
+    {id:85, theme:"Principles", question:"Which PRINCE2 principle means that a project should only proceed if there is a justifiable business reason?", options:["Manage by stages","Focus on products","Continued business justification","Defined roles and responsibilities"], correct:2, explanation:"Continued business justification: a project must have a valid business reason to start and that reason must remain valid throughout. If not, the project should stop."},
+    {id:86, theme:"Processes", question:"What is produced at the end of the Closing a Project process?", options:["Stage Plan","Project Mandate","End Project Report and Lessons Report","Benefits Management Approach only"], correct:2, explanation:"Closing a Project produces the End Project Report (final performance summary) and the Lessons Report (knowledge for future projects), plus recommends project closure to the Project Board."},
+    {id:87, theme:"Documents", question:"The Lessons Log is:", options:["Only populated at project close","Updated throughout the project as lessons are identified and applied","Written by the Project Board","Used only for risks"], correct:1, explanation:"The Lessons Log is maintained throughout the project. Lessons from previous projects are entered at the start, and new lessons are added as the project progresses."},
+    {id:88, theme:"Practices", question:"Which risk response involves a third party taking on the financial impact of a threat?", options:["Reduce","Avoid","Transfer","Accept"], correct:2, explanation:"Transfer moves the financial impact of a threat to a third party — e.g. through insurance or contractual arrangements. The risk itself is not eliminated."},
+    {id:89, theme:"Roles", question:"Who is responsible for approving the Project Initiation Documentation?", options:["Project Manager","Senior User","Project Board","Project Assurance"], correct:2, explanation:"The Project Board authorises the PID during Directing a Project — this is the formal go-ahead for the project to begin executing."},
+    {id:90, theme:"Practices", question:"PRINCE2 defines a product as:", options:["Any output from a project task","An input, output or outcome that can be described, created and approved","A software deliverable only","A completed work package"], correct:1, explanation:"In PRINCE2, a product is any input, output or outcome from the project — whether a tangible deliverable, a document, or a service. All products need Product Descriptions."},
+    {id:91, theme:"Processes", question:"The Checkpoint Report is produced by:", options:["The Project Manager","The Project Board","The Team Manager","Project Assurance"], correct:2, explanation:"The Team Manager produces Checkpoint Reports at agreed intervals to update the PM on progress against the Work Package — covering products completed, in progress, and planned."},
+    {id:92, theme:"Practices", question:"In PRINCE2, tolerances are defined for which six areas?", options:["Time, cost, quality, scope, risk, benefits","Time, cost, quality, risk, people, sustainability","Scope, schedule, budget, change, risk, people","Time, cost, quality, risk, benefits, sustainability"], correct:0, explanation:"PRINCE2 7th edition defines six tolerance areas: time, cost, quality, scope, risk, and benefits. Tolerances are set at project and stage level."},
+    {id:93, theme:"Documents", question:"Which document is updated throughout the project to reflect the current understanding of all identified issues?", options:["Risk Register","Daily Log","Issue Register","Lessons Log"], correct:2, explanation:"The Issue Register formally records all raised issues (requests for change, off-specifications, problems/concerns) and tracks their status throughout the project."},
+    {id:94, theme:"Roles", question:"Project Support may provide which of the following services?", options:["Making project decisions","Configuration management, administrative support and specialist tools","Approving exceptions","Managing benefits realisation"], correct:1, explanation:"Project Support provides practical assistance to the PM — including configuration management, maintaining registers, administrative support, and specialist expertise."},
+    {id:95, theme:"Processes", question:"Which PRINCE2 document is used to request a deviation from the approved plan when tolerances are forecast to be exceeded?", options:["Exception Report","Highlight Report","Checkpoint Report","End Stage Report"], correct:0, explanation:"When a stage is forecast to exceed tolerances, the PM raises an Exception Report to the Project Board — presenting the situation and options for how to respond."},
+    {id:96, theme:"Practices", question:"In PRINCE2, the Change theme (now Issues practice) controls change through:", options:["Ignoring minor changes","A formal change control approach defining how changes are assessed, approved and tracked","Accepting all stakeholder changes","Only the Project Board can raise changes"], correct:1, explanation:"Change control in PRINCE2 uses a defined approach: requests for change and off-specifications are raised as issues, assessed for impact, and decisions made within delegated authority."},
+    {id:97, theme:"Documents", question:"The Communication Management Approach defines:", options:["How quality is assured","Who needs what information, when, in what format, and from whom","The project governance structure","How risks will be escalated"], correct:1, explanation:"The Communication Management Approach defines the communication needs of all stakeholders — what information is needed, the format, frequency, and responsible parties."},
+    {id:98, theme:"Principles", question:"PRINCE2 can be applied to which type of projects?", options:["IT projects only","Any type of project in any industry or sector","Government projects only","Projects over £500,000"], correct:1, explanation:"PRINCE2 is a generic framework that can be applied to any project, regardless of size, type, industry, or geography — through tailoring."},
+    {id:99, theme:"Practices", question:"What is the purpose of the Progress practice in PRINCE2?", options:["To identify stakeholders","To establish mechanisms to monitor and compare actual achievements against planned, and forecast deviations","To manage procurement","To define the project structure"], correct:1, explanation:"The Progress practice monitors actual against planned performance, identifies deviations, and provides the mechanisms to escalate exceptions — keeping the project under control."},
+    {id:100, theme:"Processes", question:"During which process does the Project Manager prepare the Lessons Report?", options:["Starting Up a Project","Managing a Stage Boundary","Controlling a Stage","Closing a Project"], correct:3, explanation:"The Lessons Report is prepared during Closing a Project — consolidating lessons learned throughout the project to pass on to future projects and the organisation."},
+    {id:101, theme:"Processes", question:"What is the first activity in Starting Up a Project?", options:["Prepare the Project Brief","Appoint the Executive and Project Manager","Create the Project Initiation Documentation","Plan the initiation stage"], correct:1, explanation:"The first activity in Starting Up a Project is to appoint the Executive and Project Manager — they then lead the rest of the pre-project activities."},
+    {id:102, theme:"Practices", question:"Risk appetite in PRINCE2 refers to:", options:["The number of risks on the register","The organisation's attitude toward risk — how much risk it is willing to accept","The maximum budget for risk responses","The PM's personal risk tolerance"], correct:1, explanation:"Risk appetite is the unique attitude toward risk of an organisation or individual — it informs how risks are assessed and what responses are acceptable."},
+    {id:103, theme:"Roles", question:"Who is responsible for the day-to-day management of the project within the tolerances set by the Project Board?", options:["Executive","Senior User","Project Manager","Team Manager"], correct:2, explanation:"The Project Manager has day-to-day authority to run the project within the tolerances delegated by the Project Board — escalating when those tolerances are forecast to be breached."},
+    {id:104, theme:"Documents", question:"Which plan in PRINCE2 covers the entire project?", options:["Stage Plan","Team Plan","Project Plan","Exception Plan"], correct:2, explanation:"The Project Plan covers the entire project — it provides the baseline of overall scope, schedule, cost and key milestones. It is updated at each stage boundary."},
+    {id:105, theme:"Processes", question:"An Exception Plan is created to replace:", options:["The Project Plan","The current Stage Plan or Project Plan when tolerance is forecast to be exceeded","The Team Plan","The Checkpoint Report"], correct:1, explanation:"An Exception Plan replaces the Stage Plan (or Project Plan at project level) when the plan is forecast to exceed tolerance — after the Project Board approves the Exception Report."},
+    {id:106, theme:"Practices", question:"The primary output of the Business Case practice at project start is:", options:["Project Brief","Benefits Management Approach","Business Case document","Stage Plan"], correct:2, explanation:"The Business Case is developed during Initiating a Project and forms part of the PID — it justifies the project and is maintained throughout."},
+    {id:107, theme:"Principles", question:"Which PRINCE2 principle is demonstrated when the Project Board only gets involved when progress deviates beyond set tolerances?", options:["Manage by stages","Learn from experience","Focus on products","Manage by exception"], correct:3, explanation:"Manage by exception allows senior management to delegate authority with tolerances — only intervening when deviation is forecast. This is efficient senior management engagement."},
+    {id:108, theme:"Processes", question:"Which process handles the day-to-day management of a stage?", options:["Directing a Project","Initiating a Project","Controlling a Stage","Managing a Stage Boundary"], correct:2, explanation:"Controlling a Stage is the PM's day-to-day process — authorising Work Packages, monitoring progress, managing issues and risks, and reporting to the Project Board."},
+    {id:109, theme:"Documents", question:"Highlight Reports are used to:", options:["Report exceptions to the Project Board","Provide the Project Board with a regular progress summary during a stage","Record quality review results","Document lessons learned"], correct:1, explanation:"Highlight Reports are produced periodically during a stage — providing the Project Board with a snapshot of current stage progress without requiring a formal meeting."},
+    {id:110, theme:"Practices", question:"Which PRINCE2 document captures the expected benefits and the plan to measure them?", options:["Business Case","Benefits Management Approach","Project Product Description","Risk Management Approach"], correct:1, explanation:"The Benefits Management Approach defines each expected benefit, baseline measures, how/when they'll be measured, and who is responsible — enabling post-project benefits review."},
+    {id:111, theme:"Roles", question:"In PRINCE2, who ensures the project is focused on delivering the right products at the right time?", options:["Project Assurance","Project Manager","Senior User","Executive"], correct:2, explanation:"The Senior User specifies the desired outcomes, ensures the delivered products will meet user needs, and is ultimately accountable for benefits realisation."},
+    {id:112, theme:"Practices", question:"What does PRINCE2 mean by 'management products'?", options:["Physical goods produced by the project","Documents used to direct, manage and communicate the project","Software tools used by the PM","Project team outputs only"], correct:1, explanation:"Management products are the documents and artefacts used to manage and govern the project — plans, registers, reports, strategies and approaches."},
+    {id:113, theme:"Practices", question:"In PRINCE2 Risk practice, 'Accept' means:", options:["The risk has been transferred","No response is taken — the risk is acknowledged but nothing is done proactively","The risk has been eliminated","The risk owner is assigned"], correct:1, explanation:"Accept means a conscious decision to acknowledge the risk with no proactive action — used when the cost of response outweighs the benefit, or the risk is very low priority."},
+    {id:114, theme:"Processes", question:"What triggers Managing a Stage Boundary?", options:["A significant risk emerging","Approaching the end of a management stage","The Project Board's request","A change request being raised"], correct:1, explanation:"Managing a Stage Boundary is triggered as the project approaches the end of the current stage — the PM prepares for the Project Board's end-stage review and authorisation of the next stage."},
+    {id:115, theme:"Principles", question:"PRINCE2's 'Focus on products' principle means projects are driven by:", options:["Activities and tasks","The definition and delivery of products to agreed quality standards","Budget targets","Timeline milestones only"], correct:1, explanation:"PRINCE2 is product-led — defining what products need to be created (and to what quality) before planning how to create them. Products drive the schedule, not vice versa."},
+    {id:116, theme:"Roles", question:"Team Managers in PRINCE2 are responsible for:", options:["Updating the Risk Register","Managing the daily work of creating products within the Work Package agreement","Chairing the Project Board","Approving stage plans"], correct:1, explanation:"Team Managers manage the team's day-to-day work — executing Work Packages, managing team-level risk and quality, and reporting progress to the PM via Checkpoint Reports."},
+    {id:117, theme:"Documents", question:"Which PRINCE2 document defines how configuration management will be performed?", options:["Quality Management Approach","Risk Management Approach","Configuration Management Approach","Communication Management Approach"], correct:2, explanation:"The Configuration Management Approach defines how products will be identified, controlled, tracked, and protected — ensuring product integrity throughout the project."},
+    {id:118, theme:"Practices", question:"PRINCE2 defines three types of plan. Which of the following is NOT one of them?", options:["Project Plan","Stage Plan","Team Plan","Programme Plan"], correct:3, explanation:"PRINCE2 defines three types of plan: Project Plan, Stage Plan, and Team Plan. A Programme Plan is not a PRINCE2 planning level."},
+    {id:119, theme:"Processes", question:"The End Project Report is produced during:", options:["The final stage","Closing a Project","Managing a Stage Boundary","Directing a Project"], correct:1, explanation:"The End Project Report is produced during Closing a Project — it reviews actual performance against the original PID baselines and summarises the project's overall delivery."},
+    {id:120, theme:"Practices", question:"Which statement about Product Descriptions is correct?", options:["They are only written at project start","They are written for each product and reviewed at the quality review","They are optional on small projects","They are the same as Work Packages"], correct:1, explanation:"Product Descriptions are written for each planned product and used at quality reviews to verify the product meets its defined quality criteria — they are a core PRINCE2 quality tool."},
   ];
 
-  const QUESTIONS = [...BASE_Q];
-  while (QUESTIONS.length < 75) {
-    const src = BASE_Q[QUESTIONS.length % BASE_Q.length];
-    QUESTIONS.push({...src, id: QUESTIONS.length+1, question: `[Practice] ${src.question}`});
-  }
-
-  const TC  = {"Scrum Foundations":"#0f766e","Scrum Roles":"#0d9488","Scrum Events":"#0891b2","Scrum Artifacts":"#0e7490","CSM Specific":"#115e59"};
-  const TBG = {"Scrum Foundations":"#ccfbf1","Scrum Roles":"#f0fdfa","Scrum Events":"#e0f2fe","Scrum Artifacts":"#cffafe","CSM Specific":"#99f6e4"};
-  const TTX = {"Scrum Foundations":"#134e4a","Scrum Roles":"#0f766e","Scrum Events":"#0c4a6e","Scrum Artifacts":"#155e75","CSM Specific":"#134e4a"};
-  const TW  = {"Scrum Foundations":25,"Scrum Roles":20,"Scrum Events":25,"Scrum Artifacts":20,"CSM Specific":10};
+  const TC  = {Principles:"#1e3a8a", Practices:"#0369a1", Processes:"#15803d", Roles:"#92400e", Documents:"#6b21a8"};
+  const TBG = {Principles:"#dbeafe", Practices:"#e0f2fe", Processes:"#dcfce7", Roles:"#fef3c7",  Documents:"#f3e8ff"};
+  const TTX = {Principles:"#1e40af", Practices:"#0c4a6e", Processes:"#166534", Roles:"#78350f",  Documents:"#581c87"};
+  const TW  = {Principles:20, Practices:25, Processes:30, Roles:15, Documents:10};
 
   const STUDY = {
-    "Scrum Foundations":[
-      {t:"What is Scrum?",         b:"A lightweight framework for developing and sustaining complex products. Built on empiricism and lean thinking. Intentionally incomplete — it only defines what is required to implement Scrum theory. Teams fill the gaps with their collective intelligence."},
-      {t:"Empiricism & Pillars",   b:"Transparency: work and progress must be visible. Inspection: frequent checks of artifacts and progress toward goals. Adaptation: when inspection reveals deviation, the process or product must be adjusted promptly."},
-      {t:"Five Scrum Values",      b:"Commitment (to goals and each other), Focus (on Sprint work and team goals), Openness (about work and challenges), Respect (for each other's capabilities), Courage (to do the right thing and tackle hard problems). These values give life to the three pillars."},
-      {t:"The Sprint",             b:"A time-box of one month or less during which a 'Done', usable Increment is created. No changes that endanger the Sprint Goal. Scope may be clarified with the PO. Only the PO can cancel a Sprint. A new Sprint starts immediately after the previous one."},
+    Principles:[
+      {t:"7 Principles",        b:"1. Ensure ongoing viability | 2. Learn from experience | 3. Defined roles & responsibilities | 4. Manage by stages | 5. Manage by exception | 6. Focus on products | 7. Tailor to suit the project"},
+      {t:"Ensure Ongoing Viability", b:"The project must have a justifiable reason to start and continue at every stage. The Business Case is the vehicle — reviewed at each stage boundary. No viable Business Case = stop the project."},
+      {t:"Manage by Exception",  b:"Tolerances are set for all 6 objectives: time, cost, quality, scope, risk and benefits. Day-to-day control is delegated. Only breached tolerances trigger escalation — reducing unnecessary management overhead."},
+      {t:"Focus on Products",    b:"PRINCE2 is product (output) led, not activity led. Products are defined in Product Descriptions before activities are planned. This ensures clarity on what 'done' looks like before work starts."},
     ],
-    "Scrum Roles":[
-      {t:"Product Owner",          b:"Accountable for maximizing product value. Manages and orders the Product Backlog. One person — not a committee. Decisions are respected by the whole organization. May delegate PB management but remains accountable."},
-      {t:"Scrum Master",           b:"Servant-leader. Serves the Development Team (coaching, removing impediments, facilitating events), Product Owner (backlog techniques, stakeholder facilitation), and Organization (coaching Scrum adoption, removing barriers)."},
-      {t:"Development Team",       b:"3–9 professionals who deliver a potentially releasable Increment each Sprint. Self-organizing (decide how to do the work), cross-functional (have all skills needed). No sub-teams, no titles, collectively accountable."},
-      {t:"No Project Manager",     b:"Scrum does not include a Project Manager role. Traditional PM responsibilities are distributed: PO owns the 'what', Development Team owns the 'how', Scrum Master enables the process. This is intentional."},
+    Practices:[
+      {t:"7 Practices (formerly Themes)", b:"Business Case | People (new v7) | Quality | Plans | Risk | Issues | Progress. Practices replace Themes from 6th Edition and include more guidance on application."},
+      {t:"Business Case Practice", b:"Justifies the investment. Developed in SU as a draft, refined in IP, updated at each stage boundary, and formally reviewed at project closure. Owned by the Executive."},
+      {t:"Risk Practice",        b:"Threat responses: Avoid, Reduce, Fallback, Transfer, Accept, Share. Opportunity responses: Exploit, Enhance, Share, Reject. Risks are owned by individuals and reviewed regularly."},
+      {t:"Quality Practice",     b:"Defines fitness for purpose. Key outputs: Quality Management Approach, Quality Register, Product Descriptions (with quality criteria). Customer quality expectations drive all quality planning."},
     ],
-    "Scrum Events":[
-      {t:"Sprint Planning",        b:"Time-boxed: 8 hours max (1-month Sprint). Answers: Why is this Sprint valuable? (Sprint Goal), What can be Done? (selected PBIs), How will chosen work get done? (plan). Entire Scrum Team participates."},
-      {t:"Daily Scrum",            b:"15 minutes. Same time and place daily. For Developers only — inspect progress toward Sprint Goal, adapt the Sprint Backlog, create a plan for the next 24 hours. Not a status meeting. Scrum Master ensures it happens."},
-      {t:"Sprint Review",          b:"Max 4 hours (1-month Sprint). Informal working session — not a gate. Scrum Team + stakeholders review the Increment and adapt the Product Backlog. Discussion of what to do next based on what was learned."},
-      {t:"Sprint Retrospective",   b:"Max 3 hours (1-month Sprint). Inspect: how the last Sprint went (people, relationships, process, tools). Identify: the most helpful improvements. Create a plan to implement them. The Scrum Master participates as a peer."},
+    Processes:[
+      {t:"7 Processes Overview", b:"Starting Up (SU) → Initiating a Project (IP) → Directing a Project (DP, throughout) → Controlling a Stage (CS) → Managing Product Delivery (MPD) → Managing a Stage Boundary (SB) → Closing a Project (CP)"},
+      {t:"Starting Up a Project", b:"Pre-project process. Triggered by a project mandate. Produces: Project Brief, Lessons Log (from previous projects), Initiation Stage Plan. The key question: is this worth initiating?"},
+      {t:"Initiating a Project",  b:"Creates the firm foundation. Produces the PID (the 'contract' between PM and board), containing all management approaches, controls and tolerances. Board authorizes before delivery starts."},
+      {t:"Stage Boundary & Closing", b:"SB: update plans and reports, seek board authorization for next stage. CP: produce End Project Report, Lessons Report, Follow-on Actions, confirm acceptance of products, release resources."},
     ],
-    "Scrum Artifacts":[
-      {t:"Product Backlog",        b:"Emergent, ordered list of what is needed to improve the product. Never complete. Only source of work for the Scrum Team. Continuously refined. Items higher up are usually clearer, more detailed, and smaller. Owned by the Product Owner."},
-      {t:"Sprint Backlog",         b:"Sprint Goal + selected PBIs + delivery plan. Owned by Developers. Updated throughout Sprint as more is learned. A visible real-time picture of the work planned. Only Developers can change it during the Sprint."},
-      {t:"Increment",              b:"Sum of all completed PBIs plus previous Increments. Must meet Definition of Done. Usable regardless of whether PO decides to release. Multiple Increments can be created within a Sprint."},
-      {t:"Definition of Done",     b:"Shared understanding of what 'complete' means. Created before first Sprint. Ensures transparency and quality. Not the same as acceptance criteria (which are item-specific). May become more stringent over time."},
+    Roles:[
+      {t:"Project Board",        b:"Executive (chairs, owns Business Case, represents business) | Senior User (specifies need, ensures benefit realization) | Senior Supplier (provides/commits resources, ensures technical integrity)."},
+      {t:"Project Manager",      b:"Manages day-to-day within board-set constraints. Plans stages, controls work packages, manages issues/risks, produces reports. Single PM per project — accountable to the Project Board."},
+      {t:"Team Manager & Support", b:"Team Manager: accountable for delivering Work Packages to specification. Project Support: admin/tools/configuration. Project Assurance: independent checking on behalf of each board member."},
+      {t:"Change Authority",     b:"Optional role delegated by board to handle requests for change within defined limits. Reduces board overhead. Decisions recorded in the Issue Register. Can be the PM or a separate person."},
     ],
-    "CSM Specific":[
-      {t:"CSM vs PSM I",           b:"Both certify Scrum Master knowledge. CSM (Scrum Alliance): requires attending a 2-day course + passing exam, renewal every 2 years with SEUs. PSM I (Scrum.org): online exam only, 85% pass mark, no renewal required. Both widely recognized."},
-      {t:"Servant Leadership",     b:"The Scrum Master leads by serving — removing obstacles, facilitating events, coaching the team. Not a boss or project manager. Creates conditions for the team to be high-performing, self-organizing, and continuously improving."},
-      {t:"Common Anti-Patterns",   b:"Hardening Sprints (quality should be built in), 'ScrumBut' (using Scrum but skipping events), Scrum Master as secretary/note-taker, PO unavailable to team, stakeholders bypassing the PO, extending Sprints when behind."},
-      {t:"Agile Mindset",          b:"Individuals & interactions over processes. Working software over documentation. Customer collaboration over contracts. Responding to change over following a plan. Scrum is one way to embody agile values — the mindset matters as much as the practice."},
+    Documents:[
+      {t:"Key Document Flow",    b:"Mandate → Project Brief → PID → Stage Plans → Work Packages → Checkpoint Reports → Highlight Reports → End Stage Reports → End Project Report → Lessons Report"},
+      {t:"Project Initiation Document", b:"The 'why, what, how, when, who and how much' of the project. Contains the Business Case, all management approaches, project controls, risk budget, change budget and tolerances."},
+      {t:"Work Package",         b:"Formal agreement between PM and Team Manager. Defines: products to create, constraints, interfaces, quality requirements, reporting frequency, and how/when handover will happen."},
+      {t:"Registers & Logs",     b:"Risk Register (threats/opportunities) | Issue Register (RFCs, off-specs, general issues) | Quality Register (planned and actual quality events) | Lessons Log | Daily Log (informal PM notes)"},
     ],
   };
 
-  function shuffle(arr){
+  function shuffle(arr) {
     const a=[...arr];
     for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
     return a;
@@ -133,12 +204,13 @@
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   }
 
+  // ── Clock ──────────────────────────────────────────────────────────────────
   function Clock({seconds,total}){
     const pct=seconds/total;
     const isRed=pct<0.15,isAmber=pct<0.33;
-    const bg=isRed?"#dc2626":isAmber?"#d97706":PRI;
-    const light=isRed?"#fee2e2":isAmber?"#fef3c7":"#ccfbf1";
-    const bdr=isRed?"#fca5a5":isAmber?"#fde68a":"#5eead4";
+    const bg=isRed?"#dc2626":isAmber?"#d97706":"#15803d";
+    const light=isRed?"#fee2e2":isAmber?"#fef3c7":"#f0fdf4";
+    const bdr=isRed?"#fca5a5":isAmber?"#fde68a":"#86efac";
     return(
       <div style={{display:"flex",alignItems:"center",gap:10,background:light,border:`2px solid ${bdr}`,borderRadius:10,padding:"8px 18px",animation:isRed?"pulseRed 1s infinite":"none"}}>
         <span style={{fontSize:20}}>{isRed?"⚠️":isAmber?"⏰":"🕐"}</span>
@@ -148,18 +220,20 @@
     );
   }
 
+  // ── Tag ────────────────────────────────────────────────────────────────────
   function Tag({theme}){
     return <span style={{background:TBG[theme],color:TTX[theme],borderRadius:5,padding:"3px 10px",fontSize:11,fontWeight:700,flexShrink:0}}>{theme}</span>;
   }
 
+  // ── Nav ────────────────────────────────────────────────────────────────────
   function Nav({screen,setScreen}){
     if(screen==="exam") return null;
     return(
-      <nav style={{background:"#fff",borderBottom:"1px solid #ccfbf1",padding:"0 20px",position:"sticky",top:0,zIndex:50,boxShadow:"0 1px 3px rgba(15,118,110,0.08)"}}>
+      <nav style={{background:"#fff",borderBottom:"1px solid #e2ddd6",padding:"0 20px",position:"sticky",top:0,zIndex:50,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
         <div style={{maxWidth:860,margin:"0 auto",display:"flex",alignItems:"center",height:50,gap:4}}>
-          <span style={{fontFamily:"'Source Serif 4',serif",color:PRI,fontWeight:700,fontSize:16,marginRight:16,cursor:"pointer"}} onClick={()=>setScreen("home")}>CSM®</span>
+          <span style={{fontFamily:"'Source Serif 4',serif",color:"#1e3a8a",fontWeight:700,fontSize:16,marginRight:16,cursor:"pointer"}} onClick={()=>setScreen("home")}>PRINCE2®</span>
           {[["home","Home"],["study","Study"],["review","Review"]].map(([s,label])=>(
-            <button key={s} onClick={()=>setScreen(s)} style={{background:screen===s?"#ccfbf1":"transparent",border:screen===s?"1px solid #5eead4":"1px solid transparent",borderRadius:7,padding:"6px 14px",color:screen===s?PRI:"#6b7280",fontSize:13,fontWeight:600,transition:"all 0.15s"}}>
+            <button key={s} onClick={()=>setScreen(s)} style={{background:screen===s?"#eff3ff":"transparent",border:screen===s?"1px solid #bfdbfe":"1px solid transparent",borderRadius:7,padding:"6px 14px",color:screen===s?"#1e3a8a":"#6b7280",fontSize:13,fontWeight:600,transition:"all 0.15s"}}>
               {label}
             </button>
           ))}
@@ -168,27 +242,28 @@
     );
   }
 
+  // ── Home ───────────────────────────────────────────────────────────────────
   function Home({onStart,onStudy,onReview,lastResult}){
     return(
       <div style={{maxWidth:660,margin:"0 auto",padding:"52px 20px"}}>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #ccfbf1",padding:"38px 42px",boxShadow:"0 2px 14px rgba(15,118,110,0.08)",marginBottom:16}}>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2ddd6",padding:"38px 42px",boxShadow:"0 2px 14px rgba(0,0,0,0.06)",marginBottom:16}}>
           <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:26,flexWrap:"wrap",gap:14}}>
             <div>
-              <p style={{fontSize:11,fontWeight:700,letterSpacing:2,color:"#9ca3af",textTransform:"uppercase",marginBottom:8}}>Scrum Alliance Certification Prep</p>
+              <p style={{fontSize:11,fontWeight:700,letterSpacing:2,color:"#9ca3af",textTransform:"uppercase",marginBottom:8}}>Axelos Certification Prep</p>
               <h1 style={{fontFamily:"'Source Serif 4',serif",fontSize:"clamp(1.9rem,4vw,2.7rem)",fontWeight:700,color:"#111827",lineHeight:1.15}}>
-                CSM®<br/>Exam Simulator
+                PRINCE2®<br/>Exam Simulator
               </h1>
-              <p style={{color:"#6b7280",fontSize:14,marginTop:8}}>Certified Scrum Master · 2026</p>
+              <p style={{color:"#6b7280",fontSize:14,marginTop:8}}>7th Edition (2023) · Foundation Level</p>
             </div>
-            <div style={{background:PRI,color:"white",borderRadius:12,padding:"14px 22px",textAlign:"center"}}>
-              <div style={{fontSize:32,fontWeight:700,lineHeight:1}}>75</div>
+            <div style={{background:"#1e3a8a",color:"white",borderRadius:12,padding:"14px 22px",textAlign:"center"}}>
+              <div style={{fontSize:32,fontWeight:700,lineHeight:1}}>120</div>
               <div style={{fontSize:11,marginTop:4,opacity:0.75}}>Questions</div>
             </div>
           </div>
 
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:26,paddingBottom:26,borderBottom:"1px solid #e6faf8"}}>
-            {[["⏱","60 Min","Time Limit"],["📋","75 Questions","Multiple Choice"],["✅","74%","Passing Score"]].map(([icon,val,lbl])=>(
-              <div key={lbl} style={{textAlign:"center",padding:"14px 8px",background:"#f0fdfa",borderRadius:10,border:"1px solid #ccfbf1"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:26,paddingBottom:26,borderBottom:"1px solid #f0ece4"}}>
+            {[["⏱","150 Min","Time Limit"],["📋","120 Scored","Foundation"],["✅","55%","Passing Score"]].map(([icon,val,lbl])=>(
+              <div key={lbl} style={{textAlign:"center",padding:"14px 8px",background:"#fafaf8",borderRadius:10,border:"1px solid #ece8e0"}}>
                 <div style={{fontSize:20,marginBottom:5}}>{icon}</div>
                 <div style={{fontWeight:700,fontSize:15,color:"#111827"}}>{val}</div>
                 <div style={{fontSize:11,color:"#9ca3af",marginTop:3}}>{lbl}</div>
@@ -196,11 +271,11 @@
             ))}
           </div>
 
-          <p style={{fontSize:11,fontWeight:700,letterSpacing:1.5,color:"#9ca3af",textTransform:"uppercase",marginBottom:12}}>Topic Breakdown</p>
+          <p style={{fontSize:11,fontWeight:700,letterSpacing:1.5,color:"#9ca3af",textTransform:"uppercase",marginBottom:12}}>Theme Breakdown</p>
           {Object.entries(TW).map(([t,w])=>(
             <div key={t} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
               <Tag theme={t}/>
-              <div style={{flex:1,height:8,background:"#e6faf8",borderRadius:4,overflow:"hidden"}}>
+              <div style={{flex:1,height:8,background:"#f0ece4",borderRadius:4,overflow:"hidden"}}>
                 <div style={{width:`${w}%`,height:"100%",background:TC[t],borderRadius:4}}/>
               </div>
               <span style={{fontWeight:700,fontSize:13,color:"#374151",minWidth:30,textAlign:"right"}}>{w}%</span>
@@ -208,16 +283,16 @@
           ))}
 
           <div style={{display:"grid",gap:10,marginTop:26}}>
-            <button onClick={onStart} style={{background:PRI,color:"white",border:"none",borderRadius:10,padding:"16px 24px",fontSize:16,fontWeight:700,letterSpacing:0.3,transition:"background 0.15s"}}
-              onMouseOver={e=>e.currentTarget.style.background=PRI2}
-              onMouseOut={e=>e.currentTarget.style.background=PRI}>
+            <button onClick={onStart} style={{background:"#1e3a8a",color:"white",border:"none",borderRadius:10,padding:"16px 24px",fontSize:16,fontWeight:700,letterSpacing:0.3,transition:"background 0.15s"}}
+              onMouseOver={e=>e.currentTarget.style.background="#1e40af"}
+              onMouseOut={e=>e.currentTarget.style.background="#1e3a8a"}>
               Begin Examination →
             </button>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               {[["📚 Study Notes",onStudy],["📖 Question Bank",onReview]].map(([lbl,fn])=>(
-                <button key={lbl} onClick={fn} style={{background:"#f0fdfa",border:"1px solid #ccfbf1",borderRadius:10,padding:"13px",color:"#374151",fontSize:14,fontWeight:600,transition:"background 0.15s"}}
-                  onMouseOver={e=>e.currentTarget.style.background="#ccfbf1"}
-                  onMouseOut={e=>e.currentTarget.style.background="#f0fdfa"}>
+                <button key={lbl} onClick={fn} style={{background:"#f9f7f4",border:"1px solid #e2ddd6",borderRadius:10,padding:"13px",color:"#374151",fontSize:14,fontWeight:600,transition:"background 0.15s"}}
+                  onMouseOver={e=>e.currentTarget.style.background="#ece8e0"}
+                  onMouseOut={e=>e.currentTarget.style.background="#f9f7f4"}>
                   {lbl}
                 </button>
               ))}
@@ -226,7 +301,7 @@
         </div>
 
         {lastResult&&(
-          <div style={{background:"#fff",borderRadius:12,border:"1px solid #ccfbf1",padding:"16px 22px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10,boxShadow:"0 1px 4px rgba(15,118,110,0.06)"}}>
+          <div style={{background:"#fff",borderRadius:12,border:"1px solid #e2ddd6",padding:"16px 22px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
             <div>
               <p style={{fontSize:11,color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:1,margin:"0 0 3px"}}>Last Attempt</p>
               <p style={{fontSize:20,fontWeight:700,color:"#111827",margin:0}}>{lastResult.pct.toFixed(1)}% <span style={{fontSize:14,fontWeight:400,color:"#6b7280"}}>({lastResult.correct}/{lastResult.total})</span></p>
@@ -240,21 +315,22 @@
     );
   }
 
+  // ── Study ──────────────────────────────────────────────────────────────────
   function Study(){
-    const [topic,setTopic]=useState("Scrum Foundations");
+    const [topic,setTopic]=useState("Principles");
     return(
       <div style={{maxWidth:720,margin:"0 auto",padding:"32px 20px"}}>
         <h2 style={{fontFamily:"'Source Serif 4',serif",color:"#111827",fontSize:26,marginBottom:20}}>Study Notes</h2>
         <div style={{display:"flex",gap:8,marginBottom:22,flexWrap:"wrap"}}>
           {Object.keys(STUDY).map(t=>(
-            <button key={t} onClick={()=>setTopic(t)} style={{background:topic===t?TC[t]:"#fff",border:`1.5px solid ${topic===t?TC[t]:"#ccfbf1"}`,borderRadius:8,padding:"8px 16px",color:topic===t?"white":"#374151",fontSize:13,fontWeight:600,transition:"all 0.15s"}}>
+            <button key={t} onClick={()=>setTopic(t)} style={{background:topic===t?TC[t]:"#fff",border:`1.5px solid ${topic===t?TC[t]:"#e2ddd6"}`,borderRadius:8,padding:"8px 16px",color:topic===t?"white":"#374151",fontSize:13,fontWeight:600,transition:"all 0.15s"}}>
               {t}
             </button>
           ))}
         </div>
         <div style={{display:"grid",gap:12}}>
           {STUDY[topic].map((s,i)=>(
-            <div key={i} style={{background:"#fff",border:"1px solid #ccfbf1",borderLeft:`4px solid ${TC[topic]}`,borderRadius:"0 12px 12px 0",padding:"18px 22px",boxShadow:"0 1px 4px rgba(15,118,110,0.05)"}}>
+            <div key={i} style={{background:"#fff",border:"1px solid #e2ddd6",borderLeft:`4px solid ${TC[topic]}`,borderRadius:"0 12px 12px 0",padding:"18px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
               <h4 style={{color:TC[topic],margin:"0 0 8px",fontSize:14,fontWeight:700}}>{s.t}</h4>
               <p style={{color:"#4b5563",margin:0,fontSize:14,lineHeight:1.8}}>{s.b}</p>
             </div>
@@ -264,35 +340,36 @@
     );
   }
 
+  // ── Review ─────────────────────────────────────────────────────────────────
   function Review(){
     const [filter,setFilter]=useState("All");
     const [open,setOpen]=useState(null);
-    const filtered=filter==="All"?BASE_Q:BASE_Q.filter(q=>q.theme===filter);
+    const filtered=filter==="All"?QUESTIONS:QUESTIONS.filter(q=>q.theme===filter);
     return(
       <div style={{maxWidth:720,margin:"0 auto",padding:"32px 20px"}}>
         <h2 style={{fontFamily:"'Source Serif 4',serif",color:"#111827",fontSize:26,marginBottom:20}}>Question Bank</h2>
         <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
           {["All",...Object.keys(TW)].map(d=>(
-            <button key={d} onClick={()=>setFilter(d)} style={{background:filter===d?(d==="All"?PRI:TC[d]):"#fff",border:`1.5px solid ${filter===d?(d==="All"?PRI:TC[d]):"#ccfbf1"}`,borderRadius:8,padding:"7px 14px",color:filter===d?"white":"#374151",fontSize:12,fontWeight:600}}>
+            <button key={d} onClick={()=>setFilter(d)} style={{background:filter===d?(d==="All"?"#1e3a8a":TC[d]):"#fff",border:`1.5px solid ${filter===d?(d==="All"?"#1e3a8a":TC[d]):"#e2ddd6"}`,borderRadius:8,padding:"7px 14px",color:filter===d?"white":"#374151",fontSize:12,fontWeight:600}}>
               {d}
             </button>
           ))}
         </div>
         <div style={{display:"grid",gap:8}}>
           {filtered.map(q=>(
-            <div key={q.id} style={{background:"#fff",border:"1px solid #ccfbf1",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(15,118,110,0.05)"}}>
+            <div key={q.id} style={{background:"#fff",border:"1px solid #e2ddd6",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
               <button onClick={()=>setOpen(open===q.id?null:q.id)} style={{width:"100%",background:"none",border:"none",padding:"14px 18px",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:12}}>
                 <Tag theme={q.theme}/>
                 <span style={{color:"#374151",fontSize:13,flex:1}}>{q.question}</span>
                 <span style={{color:"#9ca3af",fontSize:15,flexShrink:0}}>{open===q.id?"−":"+"}</span>
               </button>
               {open===q.id&&(
-                <div style={{padding:"0 18px 16px",borderTop:"1px solid #e6faf8"}}>
+                <div style={{padding:"0 18px 16px",borderTop:"1px solid #f0ece4"}}>
                   {q.options.map((opt,j)=>(
-                    <div key={j} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:8,marginTop:7,background:j===q.correct?"#f0fdfa":"#fafafa",border:`1px solid ${j===q.correct?"#5eead4":"#e6faf8"}`}}>
-                      <span style={{fontWeight:700,fontSize:12,color:j===q.correct?PRI:"#9ca3af",minWidth:18}}>{String.fromCharCode(65+j)}</span>
-                      <span style={{color:j===q.correct?PTXT:"#6b7280",fontSize:13}}>{opt}</span>
-                      {j===q.correct&&<span style={{marginLeft:"auto",color:PRI,fontSize:11,fontWeight:700}}>✓ CORRECT</span>}
+                    <div key={j} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:8,marginTop:7,background:j===q.correct?"#f0fdf4":"#fafaf8",border:`1px solid ${j===q.correct?"#86efac":"#e8e4dc"}`}}>
+                      <span style={{fontWeight:700,fontSize:12,color:j===q.correct?"#15803d":"#9ca3af",minWidth:18}}>{String.fromCharCode(65+j)}</span>
+                      <span style={{color:j===q.correct?"#166534":"#6b7280",fontSize:13}}>{opt}</span>
+                      {j===q.correct&&<span style={{marginLeft:"auto",color:"#15803d",fontSize:11,fontWeight:700}}>✓ CORRECT</span>}
                     </div>
                   ))}
                   <div style={{marginTop:12,padding:"10px 14px",background:"#fffbeb",borderRadius:8,border:"1px solid #fde68a",borderLeft:"3px solid #d97706"}}>
@@ -307,6 +384,7 @@
     );
   }
 
+  // ── Exam ───────────────────────────────────────────────────────────────────
   function Exam({onFinish}){
     const [questions]=useState(()=>shuffle(QUESTIONS));
     const [current,setCurrent]=useState(0);
@@ -314,9 +392,9 @@
     const [selected,setSelected]=useState(null);
     const [flagged,setFlagged]=useState(new Set());
     const [showNav,setShowNav]=useState(false);
-    const [timeLeft,setTimeLeft]=useState(60*60);
+    const [timeLeft,setTimeLeft]=useState(150*60);
     const timerRef=useRef(null);
-    const TOTAL=60*60;
+    const TOTAL=150*60;
 
     useEffect(()=>{
       timerRef.current=setInterval(()=>{
@@ -325,7 +403,7 @@
           return s-1;
         });
       },1000);
-      return()=>clearInterval(timerRef.current);
+      return ()=>clearInterval(timerRef.current);
     },[]);
 
     function submit(extra={}){
@@ -347,33 +425,33 @@
 
     const q=questions[current];
     const answered=Object.keys(answers).length+(selected!==null&&answers[current]===undefined?1:0);
-    const total=questions.length;
 
     return(
-      <div style={{minHeight:"100vh",background:"#f0fdfa"}}>
-        <div style={{background:PRI,padding:"0 20px",position:"sticky",top:0,zIndex:50}}>
+      <div style={{minHeight:"100vh",background:"#f5f3ef"}}>
+        {/* Header */}
+        <div style={{background:"#1e3a8a",padding:"0 20px",position:"sticky",top:0,zIndex:50}}>
           <div style={{maxWidth:860,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:60,gap:16,flexWrap:"wrap"}}>
             <div style={{display:"flex",alignItems:"center",gap:14}}>
-              <span style={{fontFamily:"'Source Serif 4',serif",color:"white",fontWeight:700,fontSize:16}}>CSM® Exam</span>
-              <span style={{background:"rgba(255,255,255,0.18)",color:"white",borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:600}}>{current+1} / {total}</span>
+              <span style={{fontFamily:"'Source Serif 4',serif",color:"white",fontWeight:700,fontSize:16}}>PRINCE2® Exam</span>
+              <span style={{background:"rgba(255,255,255,0.18)",color:"white",borderRadius:6,padding:"3px 10px",fontSize:12,fontWeight:600}}>{current+1} / 120</span>
               <span style={{color:"rgba(255,255,255,0.5)",fontSize:12}}>{answered} answered</span>
             </div>
             <Clock seconds={timeLeft} total={TOTAL}/>
           </div>
           <div style={{height:3,background:"rgba(255,255,255,0.15)"}}>
-            <div style={{height:"100%",width:`${(current/total)*100}%`,background:"#5eead4",transition:"width 0.3s ease"}}/>
+            <div style={{height:"100%",width:`${((current)/120)*100}%`,background:"#93c5fd",transition:"width 0.3s ease"}}/>
           </div>
         </div>
 
         <div style={{maxWidth:820,margin:"0 auto",padding:"28px 20px 100px"}}>
           <div style={{display:"flex",gap:10,marginBottom:18,alignItems:"center",flexWrap:"wrap"}}>
             <Tag theme={q.theme}/>
-            <span style={{color:"#9ca3af",fontSize:12}}>Question {current+1} of {total}</span>
+            <span style={{color:"#9ca3af",fontSize:12}}>Question {current+1} of 120</span>
             {flagged.has(current)&&<span style={{background:"#fef3c7",color:"#92400e",border:"1px solid #fde68a",borderRadius:5,padding:"3px 10px",fontSize:11,fontWeight:700}}>🚩 Flagged</span>}
             <span style={{marginLeft:"auto",color:"#9ca3af",fontSize:12}}>{answered} answered</span>
           </div>
 
-          <div className="fade-slide" key={current} style={{background:"#fff",border:"1px solid #ccfbf1",borderRadius:14,padding:"26px 30px",marginBottom:18,boxShadow:"0 2px 8px rgba(15,118,110,0.07)"}}>
+          <div className="fade-slide" key={current} style={{background:"#fff",border:"1px solid #e2ddd6",borderRadius:14,padding:"26px 30px",marginBottom:18,boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
             <p style={{fontFamily:"'Source Serif 4',serif",color:"#111827",fontSize:18,lineHeight:1.8,margin:0}}>{q.question}</p>
           </div>
 
@@ -383,16 +461,15 @@
               return(
                 <button key={i} onClick={()=>setSelected(i)} style={{
                   width:"100%",textAlign:"left",display:"flex",alignItems:"center",gap:14,
-                  padding:"14px 18px",borderRadius:10,
-                  border:`2px solid ${isSel?PRI:"#ccfbf1"}`,
-                  background:isSel?"#f0fdfa":"#fff",cursor:"pointer",
-                  transition:"all 0.15s",boxShadow:isSel?"0 0 0 3px rgba(15,118,110,0.08)":"none"}}
-                  onMouseOver={e=>{if(!isSel){e.currentTarget.style.borderColor="#5eead4";e.currentTarget.style.background="#f0fdfa";}}}
-                  onMouseOut={e=>{if(!isSel){e.currentTarget.style.borderColor="#ccfbf1";e.currentTarget.style.background="#fff";}}}>
-                  <span style={{width:30,height:30,borderRadius:7,border:`2px solid ${isSel?PRI:"#99f6e4"}`,background:isSel?PRI:"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,color:isSel?"white":"#9ca3af",flexShrink:0,transition:"all 0.15s"}}>
+                  padding:"14px 18px",borderRadius:10,border:`2px solid ${isSel?"#1e3a8a":"#e2ddd6"}`,
+                  background:isSel?"#eff3ff":"#fff",cursor:"pointer",
+                  transition:"all 0.15s",boxShadow:isSel?"0 0 0 3px rgba(30,58,138,0.08)":"none"}}
+                  onMouseOver={e=>{if(!isSel){e.currentTarget.style.borderColor="#93c5fd";e.currentTarget.style.background="#f8faff";}}}
+                  onMouseOut={e=>{if(!isSel){e.currentTarget.style.borderColor="#e2ddd6";e.currentTarget.style.background="#fff";}}}>
+                  <span style={{width:30,height:30,borderRadius:7,border:`2px solid ${isSel?"#1e3a8a":"#d1cec8"}`,background:isSel?"#1e3a8a":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,color:isSel?"white":"#9ca3af",flexShrink:0,transition:"all 0.15s"}}>
                     {String.fromCharCode(65+i)}
                   </span>
-                  <span style={{color:isSel?PRI:"#374151",fontSize:14,lineHeight:1.6,fontWeight:isSel?600:400}}>{opt}</span>
+                  <span style={{color:isSel?"#1e3a8a":"#374151",fontSize:14,lineHeight:1.6,fontWeight:isSel?600:400}}>{opt}</span>
                 </button>
               );
             })}
@@ -400,26 +477,26 @@
 
           <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
             <button onClick={()=>setFlagged(s=>{const n=new Set(s);n.has(current)?n.delete(current):n.add(current);return n;})}
-              style={{background:flagged.has(current)?"#fef3c7":"#f0fdfa",border:`1.5px solid ${flagged.has(current)?"#fbbf24":"#ccfbf1"}`,borderRadius:8,padding:"9px 16px",color:flagged.has(current)?"#92400e":"#6b7280",fontSize:13,fontWeight:600}}>
+              style={{background:flagged.has(current)?"#fef3c7":"#f9f7f4",border:`1.5px solid ${flagged.has(current)?"#fbbf24":"#e2ddd6"}`,borderRadius:8,padding:"9px 16px",color:flagged.has(current)?"#92400e":"#6b7280",fontSize:13,fontWeight:600}}>
               🚩 {flagged.has(current)?"Unflag":"Flag for Review"}
             </button>
-            <button onClick={()=>setShowNav(s=>!s)} style={{background:"#f0fdfa",border:"1.5px solid #ccfbf1",borderRadius:8,padding:"9px 16px",color:"#6b7280",fontSize:13,fontWeight:600}}>
+            <button onClick={()=>setShowNav(s=>!s)} style={{background:"#f9f7f4",border:"1.5px solid #e2ddd6",borderRadius:8,padding:"9px 16px",color:"#6b7280",fontSize:13,fontWeight:600}}>
               ⊞ Navigator
             </button>
             <div style={{flex:1}}/>
-            {current>0&&<button onClick={()=>go(current-1)} style={{background:"#f0fdfa",border:"1.5px solid #ccfbf1",borderRadius:8,padding:"9px 20px",color:"#374151",fontSize:14,fontWeight:600}}>← Previous</button>}
-            {current<total-1
-              ?<button onClick={()=>go(current+1)} style={{background:PRI,border:"none",borderRadius:8,padding:"9px 24px",color:"white",fontSize:14,fontWeight:700,transition:"background 0.15s"}}
-                onMouseOver={e=>e.currentTarget.style.background=PRI2}
-                onMouseOut={e=>e.currentTarget.style.background=PRI}>Next Question →</button>
-              :<button onClick={()=>submit()} style={{background:"#15803d",border:"none",borderRadius:8,padding:"9px 24px",color:"white",fontSize:14,fontWeight:700}}
+            {current>0&&<button onClick={()=>go(current-1)} style={{background:"#f9f7f4",border:"1.5px solid #e2ddd6",borderRadius:8,padding:"9px 20px",color:"#374151",fontSize:14,fontWeight:600}}>← Previous</button>}
+            {current<119
+              ?<button onClick={()=>go(current+1)} style={{background:"#1e3a8a",border:"none",borderRadius:8,padding:"9px 24px",color:"white",fontSize:14,fontWeight:700,transition:"background 0.15s"}}
+                onMouseOver={e=>e.currentTarget.style.background="#1e40af"}
+                onMouseOut={e=>e.currentTarget.style.background="#1e3a8a"}>Next Question →</button>
+              :<button onClick={()=>submit()} style={{background:"#15803d",border:"none",borderRadius:8,padding:"9px 24px",color:"white",fontSize:14,fontWeight:700,transition:"background 0.15s"}}
                 onMouseOver={e=>e.currentTarget.style.background="#166534"}
                 onMouseOut={e=>e.currentTarget.style.background="#15803d"}>✓ Submit Exam</button>
             }
           </div>
 
           {showNav&&(
-            <div style={{marginTop:20,background:"#fff",border:"1px solid #ccfbf1",borderRadius:14,padding:"20px 22px",boxShadow:"0 2px 8px rgba(15,118,110,0.07)"}}>
+            <div style={{marginTop:20,background:"#fff",border:"1px solid #e2ddd6",borderRadius:14,padding:"20px 22px",boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
               <p style={{color:"#9ca3af",fontSize:11,margin:"0 0 14px",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700}}>Question Navigator</p>
               <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
                 {questions.map((_,i)=>{
@@ -427,17 +504,17 @@
                   const isCur=i===current,isFlag=flagged.has(i);
                   return(
                     <button key={i} onClick={()=>go(i)} style={{width:33,height:33,borderRadius:7,fontSize:10,fontWeight:700,
-                      background:isCur?PRI:isDone?"#ccfbf1":"#f0fdfa",
-                      border:`1.5px solid ${isCur?PRI:isFlag?"#fbbf24":isDone?"#5eead4":"#ccfbf1"}`,
-                      color:isCur?"white":isDone?PRI:"#9ca3af"}}>
+                      background:isCur?"#1e3a8a":isDone?"#dcfce7":"#fafaf8",
+                      border:`1.5px solid ${isCur?"#1e3a8a":isFlag?"#fbbf24":isDone?"#86efac":"#e2ddd6"}`,
+                      color:isCur?"white":isDone?"#15803d":"#9ca3af"}}>
                       {i+1}
                     </button>
                   );
                 })}
               </div>
               <div style={{display:"flex",gap:16,fontSize:11,flexWrap:"wrap"}}>
-                <span style={{color:PRI,fontWeight:600}}>■ Current</span>
-                <span style={{color:PRI2,fontWeight:600}}>■ Answered</span>
+                <span style={{color:"#1e3a8a",fontWeight:600}}>■ Current</span>
+                <span style={{color:"#15803d",fontWeight:600}}>■ Answered</span>
                 <span style={{color:"#d97706",fontWeight:600}}>■ Flagged</span>
                 <span style={{color:"#9ca3af"}}>□ Unanswered</span>
               </div>
@@ -448,9 +525,10 @@
     );
   }
 
+  // ── Results ────────────────────────────────────────────────────────────────
   function Results({result,onRetry,onHome}){
     const {correct,total,answers,questions}=result;
-    const pct=(correct/total)*100,passed=pct>=74;
+    const pct=(correct/total)*100,passed=pct>=55;
     const [showWrong,setShowWrong]=useState(false);
 
     const ds={};
@@ -463,10 +541,10 @@
 
     return(
       <div style={{maxWidth:700,margin:"0 auto",padding:"44px 20px"}}>
-        <div style={{background:"#fff",borderRadius:16,border:"1px solid #ccfbf1",padding:"36px 40px",boxShadow:"0 2px 14px rgba(15,118,110,0.08)",marginBottom:14,textAlign:"center"}}>
+        <div style={{background:"#fff",borderRadius:16,border:"1px solid #e2ddd6",padding:"36px 40px",boxShadow:"0 2px 14px rgba(0,0,0,0.06)",marginBottom:14,textAlign:"center"}}>
           <div style={{fontSize:52,marginBottom:12}}>{passed?"🎉":"📊"}</div>
           <h2 style={{fontFamily:"'Source Serif 4',serif",fontSize:"clamp(1.6rem,4vw,2.4rem)",color:"#111827",margin:"0 0 6px"}}>{passed?"Examination Passed":"Examination Complete"}</h2>
-          <p style={{color:"#6b7280",fontSize:15,margin:"0 0 28px"}}>{passed?"Congratulations — you met the 74% passing threshold.":"You need 74% to pass. Review your weak areas below."}</p>
+          <p style={{color:"#6b7280",fontSize:15,margin:"0 0 28px"}}>{passed?"Congratulations — you met the 55% passing threshold.":"You need 55% to pass. Review the domain breakdown below."}</p>
           <div style={{display:"inline-flex",alignItems:"center",gap:24,background:passed?"#f0fdf4":"#fef2f2",border:`2px solid ${passed?"#86efac":"#fca5a5"}`,borderRadius:14,padding:"20px 36px"}}>
             <div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:48,fontWeight:600,color:passed?"#15803d":"#dc2626",lineHeight:1}}>{pct.toFixed(1)}%</div>
@@ -475,19 +553,19 @@
             <div style={{width:1,height:52,background:passed?"#86efac":"#fca5a5"}}/>
             <div>
               <div style={{fontWeight:800,fontSize:20,color:passed?"#15803d":"#dc2626"}}>{passed?"PASS":"FAIL"}</div>
-              <div style={{color:"#6b7280",fontSize:12,marginTop:3}}>Threshold: 74%</div>
+              <div style={{color:"#6b7280",fontSize:12,marginTop:3}}>Threshold: 55%</div>
             </div>
           </div>
         </div>
 
-        <div style={{background:"#fff",borderRadius:14,border:"1px solid #ccfbf1",padding:"24px 28px",marginBottom:12,boxShadow:"0 1px 4px rgba(15,118,110,0.05)"}}>
-          <h3 style={{fontFamily:"'Source Serif 4',serif",fontSize:18,color:"#111827",margin:"0 0 18px"}}>Topic Breakdown</h3>
+        <div style={{background:"#fff",borderRadius:14,border:"1px solid #e2ddd6",padding:"24px 28px",marginBottom:12,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+          <h3 style={{fontFamily:"'Source Serif 4',serif",fontSize:18,color:"#111827",margin:"0 0 18px"}}>Theme Breakdown</h3>
           {Object.entries(ds).map(([theme,stat])=>{
             const dp=(stat.c/stat.t)*100;
             return(
               <div key={theme} style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
                 <Tag theme={theme}/>
-                <div style={{flex:1,height:10,background:"#e6faf8",borderRadius:5,overflow:"hidden"}}>
+                <div style={{flex:1,height:10,background:"#f0ece4",borderRadius:5,overflow:"hidden"}}>
                   <div style={{width:`${dp}%`,height:"100%",background:TC[theme],borderRadius:5}}/>
                 </div>
                 <span style={{fontWeight:700,fontSize:13,color:"#374151",minWidth:42,textAlign:"right"}}>{dp.toFixed(0)}%</span>
@@ -497,7 +575,7 @@
           })}
         </div>
 
-        <button onClick={()=>setShowWrong(s=>!s)} style={{width:"100%",background:"#fff",border:"1px solid #ccfbf1",borderRadius:10,padding:"13px 20px",color:"#374151",fontSize:14,fontWeight:600,marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 1px 3px rgba(15,118,110,0.05)"}}>
+        <button onClick={()=>setShowWrong(s=>!s)} style={{width:"100%",background:"#fff",border:"1px solid #e2ddd6",borderRadius:10,padding:"13px 20px",color:"#374151",fontSize:14,fontWeight:600,marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
           <span>Review Incorrect Answers ({wrong.length})</span>
           <span style={{color:"#9ca3af"}}>{showWrong?"▲":"▼"}</span>
         </button>
@@ -505,7 +583,7 @@
         {showWrong&&(
           <div style={{display:"grid",gap:10,marginBottom:14}}>
             {wrong.map(({q,i,yours})=>(
-              <div key={i} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:10,padding:"16px 18px"}}>
+              <div key={i} style={{background:"#fff",border:"1px solid #fca5a5",borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:10}}>
                   <Tag theme={q.theme}/>
                   <p style={{color:"#111827",fontSize:13,margin:0,lineHeight:1.6,fontWeight:500}}>{q.question}</p>
@@ -523,15 +601,16 @@
         )}
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          <button onClick={onRetry} style={{background:PRI,border:"none",borderRadius:10,padding:"15px",color:"white",fontSize:15,fontWeight:700,transition:"background 0.15s"}}
-            onMouseOver={e=>e.currentTarget.style.background=PRI2}
-            onMouseOut={e=>e.currentTarget.style.background=PRI}>Retake Exam</button>
-          <button onClick={onHome} style={{background:"#f0fdfa",border:"1px solid #ccfbf1",borderRadius:10,padding:"15px",color:"#374151",fontSize:15,fontWeight:600}}>← Back to Home</button>
+          <button onClick={onRetry} style={{background:"#1e3a8a",border:"none",borderRadius:10,padding:"15px",color:"white",fontSize:15,fontWeight:700,transition:"background 0.15s"}}
+            onMouseOver={e=>e.currentTarget.style.background="#1e40af"}
+            onMouseOut={e=>e.currentTarget.style.background="#1e3a8a"}>Retake Exam</button>
+          <button onClick={onHome} style={{background:"#f9f7f4",border:"1px solid #e2ddd6",borderRadius:10,padding:"15px",color:"#374151",fontSize:15,fontWeight:600}}>← Back to Home</button>
         </div>
       </div>
     );
   }
 
+  // ── App ────────────────────────────────────────────────────────────────────
   function App(){
     const [screen,setScreen]=useState("home");
     const [result,setResult]=useState(null);
@@ -539,13 +618,13 @@
 
     function handleFinish(r){
       const pct=(r.correct/r.total)*100;
-      setLastResult({...r,pct,passed:pct>=74});
+      setLastResult({...r,pct,passed:pct>=55});
       setResult(r);
       setScreen("results");
     }
 
     return(
-      <div style={{minHeight:"100vh",background:"#f0fdfa"}}>
+      <div style={{minHeight:"100vh",background:"#f5f3ef"}}>
         <Nav screen={screen} setScreen={setScreen}/>
         {screen==="home"    && <Home onStart={()=>setScreen("exam")} onStudy={()=>setScreen("study")} onReview={()=>setScreen("review")} lastResult={lastResult}/>}
         {screen==="study"   && <Study/>}
